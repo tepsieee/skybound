@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SKYBOUND — Find your next somewhere</title>
+<script>if(!matchMedia("(prefers-reduced-motion:reduce)").matches&&scrollY<50)document.documentElement.classList.add("pre")</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Jost:wght@400;500;600&display=swap" />
+<style>
+/* Skybound — palette inspired by the supplied reference: navy, blue, grey, white, and soft grey. */
+:root{
+  --ink:#10213F;--navy:#10213F;--plum:#6083AA;--mauve:#666666;--dust:#D0D4DA;--silver:#FFFFFF;--hover:#ECECEC;
+  --violet:var(--plum);--paper:#ECECEC;--blue:#6083AA;--charcoal:#666666;
+  --display:"Outfit","Jost","Segoe UI",system-ui,sans-serif;
+  --body:"Jost","Segoe UI",system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--silver);font:400 16px/1.6 var(--body);
+  background-image:radial-gradient(900px 500px at 80% -10%,#263C63 0,transparent 70%),radial-gradient(700px 500px at -10% 40%,#172747 0,transparent 70%);background-repeat:no-repeat}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.01em;line-height:1.05}
+a{color:inherit;text-decoration:none}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--silver);outline-offset:3px}
+.hidden{display:none!important}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px clamp(18px,5vw,64px)}
+.brand{font:400 26px var(--display);letter-spacing:.14em;display:flex;align-items:center;gap:10px}
+.brandmark{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--silver);color:var(--ink);font:600 16px var(--body);letter-spacing:0}
+.nav{display:flex;align-items:center;gap:26px;font-size:15px;color:var(--dust)}
+.nav a:hover{color:var(--silver)}
+.navbtn{border:1px solid var(--dust);border-radius:99px;padding:9px 20px;color:var(--silver)}
+.navbtn:hover{background:var(--silver);color:var(--ink)!important}
+
+.hero{padding:clamp(30px,6vw,80px) clamp(18px,5vw,64px) 90px}
+.hero-inner{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.15fr 1fr;gap:40px;align-items:center}
+.eyebrow{color:var(--dust);font-size:15px;margin-bottom:18px;letter-spacing:.04em}
+.hero h1{font-size:clamp(46px,8vw,104px);line-height:.95;letter-spacing:-.03em}
+.hero h1 em{font-style:normal;color:var(--dust)}
+.hero p{max-width:46ch;margin:24px 0 0;color:var(--dust);font-size:18px}
+.hero-visual{position:relative;aspect-ratio:1;max-width:460px;width:100%;justify-self:center}
+.orbit{position:absolute;inset:6%;border:1px solid var(--plum);border-radius:50%}
+.orbit.two{inset:24%;border-color:var(--mauve);border-style:dashed}
+.plane{position:absolute;inset:0;display:grid;place-items:center;font-size:84px;color:var(--silver);transform:rotate(-20deg)}
+@keyframes drift{to{transform:rotate(-20deg) translate(10px,-12px)}}
+.floating-tag{position:absolute;background:var(--navy);border:1px solid var(--plum);border-radius:16px;padding:12px 16px;font-size:12px;letter-spacing:.12em;color:var(--dust)}
+.floating-tag strong{display:block;font:400 18px var(--display);letter-spacing:0;color:var(--silver);margin-top:2px}
+.tag1{top:10%;right:-2%}.tag2{bottom:8%;left:0;letter-spacing:.04em;font-size:14px}
+
+.search-wrap{max-width:1180px;margin:-50px auto 0;padding:0 clamp(18px,5vw,64px);position:relative;z-index:2}
+.search-card{background:var(--navy);border:1px solid var(--plum);border-radius:26px;padding:20px 22px 24px;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+.trip-tabs{display:flex;gap:8px;margin-bottom:16px}
+.trip-tab{background:transparent;border:1px solid var(--plum);border-radius:99px;padding:7px 16px;cursor:pointer;color:var(--dust)}
+.trip-tab.active{background:var(--silver);border-color:var(--silver);color:var(--ink)}
+.fields{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:end}.search-btn{grid-column:3/-1}
+.field label,label{display:block;font-size:12px;letter-spacing:.12em;color:var(--dust);margin-bottom:6px;text-transform:uppercase}
+select,input{width:100%;background:var(--ink);border:1px solid var(--plum);border-radius:14px;padding:13px 14px;min-height:48px;color-scheme:dark}
+select:focus,input:focus{border-color:var(--dust)}
+.search-btn,.continue{background:var(--silver);color:var(--ink);border:0;border-radius:14px;padding:14px 24px;min-height:48px;font-weight:600;cursor:pointer;transition:background .15s}
+.search-btn:hover,.continue:hover:not(:disabled){background:var(--hover)}
+.continue{width:100%;margin-top:16px}
+.continue:disabled{opacity:.35;cursor:not-allowed}
+.continue.alt{background:var(--plum);color:var(--silver)}
+
+.section{max-width:1180px;margin:0 auto;padding:100px clamp(18px,5vw,64px) 0}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;flex-wrap:wrap;margin-bottom:34px}
+.kicker{color:var(--dust);font-size:14px;letter-spacing:.06em;margin-bottom:10px}
+.section h2{font-size:clamp(36px,5vw,64px)}
+.section-head p{max-width:36ch;color:var(--dust);margin:0}
+.destinations{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.destination{cursor:pointer;background:var(--navy);border:1px solid var(--plum);border-radius:24px;overflow:hidden;transition:transform .2s,border-color .2s}
+.destination:hover{transform:translateY(-4px);border-color:var(--dust)}
+.photo{height:260px;position:relative}
+.dest1 .photo{background:linear-gradient(180deg,var(--mauve),var(--plum) 55%,var(--navy))}
+.dest2 .photo{background:linear-gradient(180deg,var(--dust),var(--mauve) 50%,var(--plum))}
+.dest3 .photo{background:linear-gradient(180deg,var(--plum),var(--navy) 55%,var(--ink))}
+.photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:
+  linear-gradient(var(--navy),var(--navy)) 8% 100%/12% 70% no-repeat,linear-gradient(var(--ink),var(--ink)) 24% 100%/9% 100% no-repeat,
+  linear-gradient(var(--navy),var(--navy)) 38% 100%/14% 55% no-repeat,linear-gradient(var(--ink),var(--ink)) 58% 100%/10% 85% no-repeat,
+  linear-gradient(var(--navy),var(--navy)) 74% 100%/13% 65% no-repeat,linear-gradient(var(--ink),var(--ink)) 92% 100%/10% 90% no-repeat}
+.dest-info{display:flex;justify-content:space-between;align-items:end;padding:18px 20px 22px}
+.dest-info small{color:var(--dust);font-size:12px;letter-spacing:.1em}
+.dest-info h3{font-size:34px;margin-top:4px}
+.price{color:var(--silver);font-size:15px;border:1px solid var(--plum);border-radius:99px;padding:6px 14px;white-space:nowrap}
+.perks{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.perk{padding:28px;border:1px solid var(--plum);border-radius:24px;background:linear-gradient(160deg,var(--navy),var(--ink))}
+.perk-icon{width:48px;height:48px;border-radius:50%;background:var(--plum);display:grid;place-items:center;font-size:22px;margin-bottom:18px}
+.perk h3{font-size:26px;margin-bottom:8px}
+.perk p{margin:0;color:var(--dust)}
+.footer{margin-top:110px;padding:34px clamp(18px,5vw,64px);border-top:1px solid var(--plum);display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:center;color:var(--dust);font-size:14px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--silver);color:var(--ink);padding:12px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(13,27,42,.82);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;z-index:50;visibility:hidden;opacity:0;transition:opacity .35s,visibility 0s .35s}
+.modal-backdrop.open{visibility:visible;opacity:1;transition:opacity .35s}
+.modal{background:var(--navy);border:1px solid var(--plum);border-radius:28px;width:min(1040px,100%);max-height:94vh;overflow:auto;padding:26px clamp(16px,3vw,32px) 30px;transform:translateY(44px) scale(.97);transition:transform .55s cubic-bezier(.2,.9,.2,1)}.open .modal{transform:none}
+.modal-top{display:flex;justify-content:space-between;gap:16px}
+.modal-top h2{font-size:clamp(30px,4vw,44px)}
+.modal-top p{margin:6px 0 0;color:var(--dust)}
+.close{width:42px;height:42px;border-radius:50%;border:1px solid var(--plum);background:transparent;font-size:24px;cursor:pointer;flex:none}
+.close:hover{background:var(--plum)}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
+.step{font-size:13px;padding:6px 14px;border-radius:99px;border:1px solid var(--plum);color:var(--dust)}
+.step.active{background:var(--silver);color:var(--ink);border-color:var(--silver)}
+.booking-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+.panel{background:var(--ink);border:1px solid var(--plum);border-radius:22px;padding:22px}
+.panel h3{font-size:28px}
+.sub{color:var(--dust);margin:6px 0 16px;font-size:15px}
+.seat-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--dust);margin-bottom:16px}
+.legend-item{display:inline-flex;align-items:center;gap:6px}
+.seat-dot{width:14px;height:14px;border-radius:4px;background:var(--plum);display:inline-block;border:1px solid var(--dust)}
+.seat-dot.selected{background:var(--silver);border-color:var(--silver)}
+.seat-dot.occupied{background:var(--navy);border-color:var(--navy)}
+.seat-dot.extra{background:var(--mauve);border-color:var(--silver)}
+.plane-cabin{background:var(--navy);border:1px solid var(--plum);border-radius:140px 140px 24px 24px/110px 110px 24px 24px;padding:26px 18px 20px;max-height:430px;overflow:auto}
+.cockpit{text-align:center;font-size:11px;letter-spacing:.18em;color:var(--dust);margin-bottom:14px}
+.seat-letters,.seat-row{display:grid;grid-template-columns:repeat(3,42px) 30px repeat(3,42px);gap:6px;justify-content:center}
+.seat-letters{font-size:12px;color:var(--dust);text-align:center;margin-bottom:8px}
+.row-num{text-align:center;font-size:10px;letter-spacing:.2em;color:var(--mauve);margin:8px 0 3px}
+.seat{height:40px;border-radius:10px 10px 5px 5px;border:1px solid var(--dust);background:var(--plum);color:var(--silver);font-size:12px;font-weight:500;cursor:pointer;padding:0;transition:transform .12s}
+.seat:hover:not(:disabled){transform:translateY(-2px);border-color:var(--silver)}
+.seat.extra{background:var(--mauve);border-color:var(--silver)}
+.seat.selected{background:var(--silver);color:var(--ink);border-color:var(--silver);font-weight:600}
+.seat.occupied,.seat:disabled{background:var(--navy);border-color:var(--navy);color:transparent;cursor:not-allowed}
+.summary-route{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+.airport strong{display:block;font:400 38px var(--display);line-height:1}
+.airport small{color:var(--dust)}
+.route-line{flex:1;border-top:1px dashed var(--dust);position:relative;height:1px}
+.route-line span{position:absolute;left:50%;top:-12px;transform:translateX(-50%);background:var(--ink);padding:0 8px;color:var(--silver)}
+.summary-item{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--plum);font-size:15px}
+.summary-item span{color:var(--dust)}
+.summary-total{border-bottom:0;flex-wrap:wrap;padding-top:14px}
+.summary-total strong{font:400 34px var(--display)}
+.fineprint{font-size:12px;color:var(--dust);margin:14px 0 0}
+.passenger-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.success{text-align:center;padding:20px 0 4px}
+.success h3{font-size:clamp(30px,4vw,44px);margin:6px 0 10px}
+.success p{color:var(--dust);max-width:46ch;margin:0 auto 22px}
+.check{width:64px;height:64px;border-radius:50%;background:var(--plum);display:grid;place-items:center;margin:0 auto 14px;font-size:28px}
+.ticket{max-width:480px;margin:0 auto 22px;text-align:left;background:var(--ink);border:1px solid var(--plum);border-radius:22px;padding:20px 22px}
+.ticket-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed var(--plum)}
+.ticket-row:last-child{border-bottom:0}
+.ticket strong{display:block;font:400 30px var(--display);line-height:1.1}
+.ticket small{color:var(--dust);font-size:11px;letter-spacing:.12em;display:block}
+.ticket .brand{font-size:18px;margin-bottom:6px}
+
+
+/* Interactive destination globe — reference-inspired indigo, blue, charcoal and white */
+.world-section{position:relative;overflow:hidden;margin:18px auto 34px;width:min( calc(100% - 40px), 1440px);padding:36px clamp(18px,4vw,56px) 12px;background:radial-gradient(ellipse at 50% 68%,#6083AA 0%,#10213F 42%,#10213F 100%);border:1px solid #5F83AC33;border-radius:24px;box-shadow:0 28px 90px #080F2633;min-height:690px}
+.world-section:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#5F83AC0D 1px,transparent 1px),linear-gradient(90deg,#5F83AC0D 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(90deg,transparent,#000 25%,#000 75%,transparent);pointer-events:none}
+.world-inner{position:relative;z-index:1;max-width:1120px;margin:auto;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center}
+.world-copy{width:100%;display:flex;flex-direction:column;align-items:center}.world-copy .kicker{font-size:10px;letter-spacing:.22em;color:#AFC7E0;margin-bottom:14px}
+.world-copy h2{font-size:clamp(34px,4.4vw,58px);line-height:1.02;letter-spacing:-.035em;margin:0}
+.world-copy h2 em{font-style:normal;color:#6083AA}
+.world-copy>p{max-width:520px;color:#C8D1DD;font-size:14px;margin:14px auto 0}
+.globe-selected{display:flex;align-items:center;justify-content:center;gap:13px;margin-top:18px}
+.live-dot{width:9px;height:9px;border-radius:50%;background:#6083AA;box-shadow:0 0 0 6px #5F83AC22}
+.globe-selected small,.globe-chip small{display:block;font-size:9px;letter-spacing:.16em;color:#93A4BC}
+.globe-selected strong{display:block;font-size:19px;font-weight:500;color:#fff}
+.globe-cta{margin-top:16px;border:1px solid #9BB7D8;background:#5F83AC;color:#fff;border-radius:99px;padding:13px 20px;display:flex;gap:28px;align-items:center;justify-content:space-between;min-width:220px;cursor:pointer;transition:transform .2s,background .2s}
+.globe-cta:hover{transform:translateY(-2px);background:#7396BE}
+.globe-hint{font-size:9px!important;letter-spacing:.12em;color:#8195B0!important;margin-top:13px!important}
+.globe-stage{position:relative;width:min(100%,790px);min-width:0;aspect-ratio:1.55;display:grid;place-items:center;isolation:isolate;margin-top:-2px}
+#worldGlobe{width:100%;height:100%;max-height:530px;display:block;cursor:grab;touch-action:pan-y;position:relative;z-index:2}
+#worldGlobe:active{cursor:grabbing}
+.globe-halo{position:absolute;width:64%;aspect-ratio:1;border-radius:50%;background:#5F83AC22;filter:blur(44px);z-index:0}
+.globe-orbit{position:absolute;border:1px solid #789BC533;border-radius:50%;width:88%;height:34%;transform:rotate(-28deg);z-index:1;pointer-events:none}
+.orbit-b{width:98%;height:43%;transform:rotate(52deg);border-color:#789BC522}
+.globe-chip{position:absolute;z-index:3;background:#172747D9;border:1px solid #5F83AC77;backdrop-filter:blur(12px);border-radius:12px;padding:10px 13px;font-size:9px;letter-spacing:.14em;color:#E9EFF8;box-shadow:0 12px 32px #0002}
+.chip-top{top:12%;left:4%}.chip-top span{color:#8EB3DF;margin-left:10px}
+.chip-bottom{bottom:9%;right:1%;display:grid;grid-template-columns:24px auto;column-gap:8px;align-items:center;font-size:12px;letter-spacing:.04em}
+.chip-bottom small{grid-column:2}.chip-plane{grid-row:1/3;font-size:18px;color:#8EB3DF}
+.destination-pin{cursor:pointer}
+@media(max-width:900px){.world-section{width:calc(100% - 24px);margin:12px auto 24px;min-height:600px;padding:32px 18px 0}.world-inner{gap:0}.world-copy{max-width:700px}.globe-stage{width:min(100%,700px);aspect-ratio:1.25;margin-top:8px}.globe-hint{margin-bottom:0!important}}
+@media(max-width:520px){.world-section{min-height:550px;padding:28px 12px 0;border-radius:18px}.world-copy h2{font-size:34px}.world-copy>p{font-size:13px;padding:0 6px}.globe-stage{aspect-ratio:1.08;width:100%;margin-top:6px}.chip-top{top:6%;left:0;font-size:8px}.chip-bottom{bottom:4%;right:0}.globe-cta{width:100%;max-width:300px;justify-content:center;gap:16px}}
+
+@media (max-width:900px){
+  .hero-inner,.booking-grid,.destinations,.perks{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr 1fr}.search-btn{grid-column:1/-1}
+  .nav a:not(.navbtn){display:none}
+  .hero-visual{max-width:320px}
+}
+@media (max-width:520px){.swap{right:20px!important;top:auto!important;bottom:-27px}.fields,.passenger-fields{grid-template-columns:1fr}.seat-letters,.seat-row{grid-template-columns:repeat(3,36px) 22px repeat(3,36px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Single dark theme using the reference palette: navy, blue, grey, white. */
+/* plane intro */
+.plane svg,#flyer svg{width:84px;height:84px;display:block}
+#flyer{position:fixed;left:0;top:0;width:84px;height:84px;z-index:80;pointer-events:none;color:var(--silver);transform:translate(-300px,-300px);display:none;will-change:transform}
+#trail{position:fixed;inset:0;width:100%;height:100%;z-index:79;pointer-events:none;display:none;transition:opacity 1.3s}
+#trail circle{fill:var(--dust);opacity:0;transition:opacity .5s}
+.pre #flyer,.pre #trail,.landed #trail{display:block}
+html:not(.pre) .plane{animation:drift 2.8s ease-in-out infinite alternate}
+.pre .plane{opacity:0}
+.hr{transition:opacity 1s cubic-bezier(.2,.8,.2,1) var(--d,0s),transform 1s cubic-bezier(.2,.8,.2,1) var(--d,0s),filter 1s var(--d,0s)}
+.pre .hr{opacity:0;transform:translateY(26px);filter:blur(8px)}
+.floating-tag{transition:opacity .8s .5s,transform .8s .5s cubic-bezier(.2,.8,.2,1)}
+.pre .floating-tag{opacity:0;transform:scale(.8)}
+.landed .orbit{animation:ring 1.6s cubic-bezier(.2,.8,.2,1)}
+@keyframes ring{from{transform:scale(.7);opacity:0}}
+/* scroll reveal */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .9s ease var(--d,0s),transform .9s cubic-bezier(.2,.8,.2,1) var(--d,0s)}
+.rv.in{opacity:1;transform:none;transition:opacity .9s ease,transform .3s ease,border-color .2s}
+/* extras */
+.fromf{position:relative}
+.swap{position:absolute;right:-27px;top:30px;width:40px;height:40px;border-radius:50%;border:1px solid var(--plum);background:var(--navy);color:var(--silver);cursor:pointer;z-index:3;transition:transform .55s cubic-bezier(.3,1.4,.4,1),background .2s}
+.swap:hover{background:var(--silver);color:var(--ink)}.swap.flip{transform:rotate(180deg)}
+.addons{margin-top:14px}
+.addon{position:relative;display:block;margin:0 0 8px;text-transform:none;letter-spacing:0;font-size:15px;color:var(--silver)}
+.addon input{position:absolute;opacity:0;width:1px;height:1px}
+.addon span{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--plum);border-radius:14px;padding:10px 14px;cursor:pointer;transition:background .25s,color .25s,transform .2s}
+.addon span:hover{transform:translateX(3px)}
+.addon input:checked+span{background:var(--silver);color:var(--ink);border-color:var(--silver)}
+.addon input:focus-visible+span{outline:2px solid var(--silver);outline-offset:2px}
+.addon b{font-weight:500;opacity:.8}
+.booking-content>div:not(.hidden){animation:stageIn .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes stageIn{from{opacity:0;transform:translateY(18px)}}
+.seat.selected{animation:seatpop .3s}
+@keyframes seatpop{50%{transform:scale(1.18)}}
+.ticket-line{flex:1;align-self:center;position:relative;border-top:2px dashed var(--plum);margin:0 14px}
+.ticket-line svg{position:absolute;top:-14px;left:0;width:28px;height:28px;color:var(--silver)}
+.success:not(.hidden) .ticket-line svg{animation:cruise 2.4s .3s cubic-bezier(.6,0,.2,1) both}
+@keyframes cruise{from{left:0}to{left:calc(100% - 28px)}}
+.success:not(.hidden) .check{animation:cpop .7s cubic-bezier(.3,1.5,.4,1) both}
+@keyframes cpop{from{transform:scale(0) rotate(-40deg)}}
+
+
+/* Destination directory: names and regions make every globe pin recognizable. */
+.destination-directory{width:min(calc(100% - 40px),1328px);margin:0 auto 76px;padding:clamp(24px,4vw,48px);border:1px solid #6083AA55;border-radius:24px;background:linear-gradient(145deg,#142744,#10213F 70%);color:#FFFFFF}
+.destination-directory-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:26px}
+.destination-directory .kicker{color:#9BB8D9;font-size:11px;letter-spacing:.16em;font-weight:600;margin-bottom:10px}
+.destination-directory h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.03em}
+.destination-directory-head p{max-width:650px;color:#D0D4DA;margin:12px 0 0}
+.destination-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.destination-option{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:132px;padding:17px 16px;text-align:left;color:#FFFFFF;background:#172B4B;border:1px solid #6083AA66;border-radius:16px;cursor:pointer;transition:transform .2s,border-color .2s,background .2s}
+.destination-option:hover,.destination-option:focus-visible{transform:translateY(-3px);border-color:#FFFFFF;background:#203B61}
+.destination-option.is-selected{border-color:#FFFFFF;background:#294568;box-shadow:inset 0 0 0 1px #FFFFFF55}
+.destination-code{font:600 10px/1.4 "Jost",sans-serif;letter-spacing:.16em;color:#A9C8EC}
+.destination-name{font:500 20px/1.2 "Outfit","Jost",sans-serif;margin-top:7px}
+.destination-country{font-size:12px;line-height:1.4;color:#D0D4DA;max-width:90%}
+.destination-arrow{position:absolute;right:14px;top:13px;color:#A9C8EC;font-size:17px}
+@media(max-width:1000px){.destination-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.destination-directory{width:calc(100% - 24px);padding:22px 16px}.destination-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.destination-option{min-height:122px;padding:13px 12px}.destination-name{font-size:18px}.destination-directory-head{margin-bottom:18px}}
+
+
+
+/* Smooth, cinematic landing motion — additive only; layout and booking logic stay intact. */
+.scroll-progress{position:fixed;inset:0 auto auto 0;height:2px;width:0;z-index:100;background:linear-gradient(90deg,#6083AA,#FFFFFF);box-shadow:0 0 14px #6083AA88;pointer-events:none;transform-origin:left}
+.topbar{position:relative;z-index:5;animation:topbar-arrive .85s cubic-bezier(.2,.8,.2,1) both}
+@keyframes topbar-arrive{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+.world-section{isolation:isolate;animation:world-arrive 1.1s .12s cubic-bezier(.2,.8,.2,1) both}
+@keyframes world-arrive{from{opacity:0;transform:translateY(18px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.world-section:after{content:"";position:absolute;inset:-35% -60%;z-index:-1;pointer-events:none;background:linear-gradient(112deg,transparent 42%,#FFFFFF08 49%,#8EB3DF13 51%,transparent 58%);transform:translateX(-40%) rotate(-8deg);animation:sky-sweep 12s 1.2s ease-in-out infinite}
+@keyframes sky-sweep{0%,18%{transform:translateX(-40%) rotate(-8deg)}62%,100%{transform:translateX(40%) rotate(-8deg)}}
+.globe-halo{animation:halo-breathe 5.5s ease-in-out infinite alternate}
+@keyframes halo-breathe{from{transform:scale(.88);opacity:.55}to{transform:scale(1.12);opacity:1}}
+.globe-orbit{animation:orbit-float 18s linear infinite}
+.orbit-b{animation-direction:reverse;animation-duration:24s}
+@keyframes orbit-float{to{rotate:360deg}}
+.chip-top{animation:chip-float 5s 1s ease-in-out infinite}
+.chip-bottom{animation:chip-float 5.8s 1.4s ease-in-out infinite reverse}
+@keyframes chip-float{0%,100%{translate:0 0}50%{translate:0 -7px}}
+.globe-cta{box-shadow:0 8px 26px #6083AA25;position:relative;overflow:hidden}
+.globe-cta:before,.search-btn:before,.navbtn:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,#FFFFFF45 48%,transparent 70%);transform:translateX(-130%);transition:transform .7s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.globe-cta:hover:before,.search-btn:hover:before,.navbtn:hover:before{transform:translateX(130%)}
+.search-btn,.navbtn{position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .25s,color .25s,box-shadow .25s}
+.search-btn:hover,.continue:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 24px #0002}
+.destination-option{overflow:hidden}
+.destination-option:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,#FFFFFF0D 48%,transparent 72%);transform:translateX(-120%);transition:transform .75s ease;pointer-events:none}
+.destination-option:hover:after{transform:translateX(120%)}
+.destination-option.is-selected .destination-arrow{animation:arrow-nudge .65s cubic-bezier(.2,.8,.2,1)}
+@keyframes arrow-nudge{50%{transform:translate(3px,-3px)}}
+.destination,.perk{will-change:transform}
+.destination{transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .4s}
+.destination:hover{transform:translateY(-7px) scale(1.01);box-shadow:0 18px 40px #0003}
+.perk{transition:transform .4s cubic-bezier(.2,.8,.2,1),border-color .3s}
+.perk:hover{transform:translateY(-5px);border-color:#FFFFFF77}
+.perk-icon{transition:transform .5s cubic-bezier(.2,.8,.2,1),background .3s}
+.perk:hover .perk-icon{transform:rotate(-8deg) scale(1.08);background:#789BC5}
+.motion-reveal{will-change:opacity,transform,filter}
+.motion-on .motion-reveal{opacity:0;transform:translateY(24px) scale(.99);filter:blur(5px);transition:opacity .85s cubic-bezier(.2,.8,.2,1) var(--motion-delay,0s),transform .85s cubic-bezier(.2,.8,.2,1) var(--motion-delay,0s),filter .85s ease var(--motion-delay,0s)}
+.motion-on .motion-reveal.motion-in{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+.motion-on .destination-option.motion-reveal{transform:translateY(20px) scale(.98)}
+.motion-on .destination-option.motion-reveal.motion-in{transform:translateY(0) scale(1)}
+.hero-visual .orbit{animation:ring-breathe 7s ease-in-out infinite alternate}
+.hero-visual .orbit.two{animation-delay:-3.5s}
+@keyframes ring-breathe{from{transform:scale(.96) rotate(-8deg);opacity:.65}to{transform:scale(1.04) rotate(8deg);opacity:1}}
+.hero-visual .plane{animation:plane-hover 4.8s ease-in-out infinite alternate}
+@keyframes plane-hover{from{transform:translate3d(-3px,4px,0) rotate(-23deg)}to{transform:translate3d(8px,-9px,0) rotate(-15deg)}}
+.floating-tag{animation:tag-in 1s .8s cubic-bezier(.2,.8,.2,1) both,tag-float 6s 1.8s ease-in-out infinite}
+.tag2{animation-delay:1s,2.4s}
+@keyframes tag-in{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
+@keyframes tag-float{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@media(max-width:620px){.world-section:after{animation-duration:16s}.motion-on .motion-reveal{filter:none;transform:translateY(16px)}}
+@media(prefers-reduced-motion:reduce){.scroll-progress{display:none}.topbar,.world-section,.world-section:after,.globe-halo,.globe-orbit,.chip-top,.chip-bottom,.hero-visual .orbit,.hero-visual .plane,.floating-tag{animation:none!important}.motion-on .motion-reveal{opacity:1;transform:none;filter:none;transition:none}}
+
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="jet" viewBox="0 0 24 24"><path fill="currentColor" transform="rotate(90 12 12)" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></symbol></svg>
+<div id="flyer" aria-hidden="true"><svg><use href="#jet"/></svg></div><svg id="trail" aria-hidden="true"></svg>
+<header class="topbar">
+  <div class="brand"><span class="brandmark">↗</span> SKYBOUND<span style="color:var(--violet)">.</span></div>
+  <nav class="nav"><a href="#destinations">Destinations</a><a href="#why">Why Skybound</a><a class="login" href="#book">My trips</a><a class="navbtn" href="#book">Book a flight ↗</a></nav>
+</header>
+<section class="world-section" id="explore">
+ <div class="world-inner">
+  <div class="world-copy">
+   <div class="kicker">THE WORLD IS YOUR DEPARTURE BOARD</div>
+   <h2>Pick a point.<br><em>Find your way there.</em></h2>
+   <p>Spin the globe with your cursor, explore the world, then choose a glowing destination pin to set your flight.</p>
+   <div class="globe-selected"><span class="live-dot"></span><div><small>YOUR NEXT SOMEWHERE</small><strong id="globeCity">Mumbai, India</strong></div></div>
+   <button class="globe-cta" id="globeBook" type="button">Build this journey <span>↗</span></button>
+   <p class="globe-hint">DRAG TO ROTATE · TAP A BLUE PIN TO CHOOSE A CITY</p>
+  </div>
+  <div class="globe-stage">
+   <div class="globe-halo"></div>
+   <canvas id="worldGlobe" aria-label="Interactive rotating globe. Drag to rotate and select a destination marker." tabindex="0"></canvas>
+   <div class="globe-orbit orbit-a"></div><div class="globe-orbit orbit-b"></div>
+   <div class="globe-chip chip-top">SKYBOUND ATLAS <span>● LIVE</span></div>
+   <div class="globe-chip chip-bottom"><span class="chip-plane">✈</span><span id="globeRouteLabel">DEL → BOM</span><small>YOUR ROUTE, YOUR WORLD</small></div>
+  </div>
+ </div>
+</section>
+
+<section class="destination-directory" aria-labelledby="destinationDirectoryTitle">
+ <div class="destination-directory-head">
+  <div><div class="kicker">EXPLORE THE SKYBOUND ATLAS</div><h2 id="destinationDirectoryTitle">Know where you’re going.</h2>
+  <p>Choose a city by name, not just a pin. Select any destination to highlight it on the globe and set it as your flight destination.</p></div>
+ </div>
+ <div class="destination-grid">
+  <button class="destination-option" type="button" data-city="BOM"><span class="destination-code">BOM</span><span class="destination-name">Mumbai</span><span class="destination-country">India · South Asia</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="DEL"><span class="destination-code">DEL</span><span class="destination-name">New Delhi</span><span class="destination-country">India · South Asia</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="GAU"><span class="destination-code">GAU</span><span class="destination-name">Guwahati</span><span class="destination-country">India · Northeast India</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="DXB"><span class="destination-code">DXB</span><span class="destination-name">Dubai</span><span class="destination-country">United Arab Emirates · Middle East</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="SIN"><span class="destination-code">SIN</span><span class="destination-name">Singapore</span><span class="destination-country">Singapore · Southeast Asia</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="CDG"><span class="destination-code">CDG</span><span class="destination-name">Paris</span><span class="destination-country">France · Europe</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="NRT"><span class="destination-code">NRT</span><span class="destination-name">Tokyo</span><span class="destination-country">Japan · East Asia</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="LHR"><span class="destination-code">LHR</span><span class="destination-name">London</span><span class="destination-country">United Kingdom · Europe</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="JFK"><span class="destination-code">JFK</span><span class="destination-name">New York</span><span class="destination-country">United States · North America</span><span class="destination-arrow">↗</span></button>
+  <button class="destination-option" type="button" data-city="DPS"><span class="destination-code">DPS</span><span class="destination-name">Bali</span><span class="destination-country">Indonesia · Southeast Asia</span><span class="destination-arrow">↗</span></button>
+ </div>
+</section>
+
+<section class="hero">
+ <div class="hero-inner">
+  <div>
+   <div class="eyebrow hr" style="--d:.05s">A little closer to everywhere</div>
+   <h1 class="hr" style="--d:.15s">Your next <em>somewhere</em> is calling.</h1>
+   <p class="hr" style="--d:.3s">Less planning, more looking out the window. Find your flight, pick the seat that feels like yours, and let the journey begin.</p>
+  </div>
+  <div class="hero-visual"><div class="orbit"></div><div class="orbit two"></div><div class="plane"><svg><use href="#jet"/></svg></div><div class="floating-tag tag1">YOUR NEXT ADVENTURE<strong>is one flight away ↗</strong></div><div class="floating-tag tag2">✦ &nbsp; Thoughtful travel, made simple</div></div>
+ </div>
+</section>
+
+
+
+<div class="search-wrap" id="book">
+ <form class="search-card" id="searchForm">
+  <div class="trip-tabs"><button class="trip-tab active" type="button" data-trip="round">↔ Round trip</button><button class="trip-tab" type="button" data-trip="one">→ One way</button></div>
+  <div class="fields">
+   <div class="field fromf"><label for="from">From</label><select id="from"><option value="DEL">New Delhi · DEL</option><option value="GAU">Guwahati · GAU</option><option value="BOM">Mumbai · BOM</option><option value="BLR">Bengaluru · BLR</option><option value="MAA">Chennai · MAA</option><option value="CCU">Kolkata · CCU</option><option value="JRH">Jorhat · JRH</option><option value="HYD">Hyderabad · HYD</option><option value="DXB">Dubai · DXB</option><option value="SIN">Singapore · SIN</option><option value="CDG">Paris · CDG</option><option value="NRT">Tokyo · NRT</option><option value="LHR">London · LHR</option><option value="JFK">New York · JFK</option><option value="DPS">Bali · DPS</option></select><button type="button" class="swap" id="swap" aria-label="Swap airports">⇄</button></div>
+   <div class="field"><label for="to">To</label><select id="to"><option value="BOM">Mumbai · BOM</option><option value="DEL">New Delhi · DEL</option><option value="GAU">Guwahati · GAU</option><option value="BLR">Bengaluru · BLR</option><option value="MAA">Chennai · MAA</option><option value="CCU">Kolkata · CCU</option><option value="JRH">Jorhat · JRH</option><option value="HYD">Hyderabad · HYD</option><option value="DXB">Dubai · DXB</option><option value="SIN">Singapore · SIN</option><option value="CDG">Paris · CDG</option><option value="NRT">Tokyo · NRT</option><option value="LHR">London · LHR</option><option value="JFK">New York · JFK</option><option value="DPS">Bali · DPS</option></select></div>
+   <div class="field"><label for="depart">Departure</label><input type="date" id="depart" required></div>
+   <div class="field" id="returnField"><label for="return">Return</label><input type="date" id="return"></div>
+   <div class="field"><label for="pax">Travellers</label><select id="pax"><option value="1">1 traveller</option><option value="2">2 travellers</option><option value="3">3 travellers</option><option value="4">4 travellers</option></select></div><div class="field"><label for="cabin">Cabin</label><select id="cabin"><option value="1">Economy</option><option value="1.45">Premium economy</option><option value="2.2">Business</option></select></div><button class="search-btn" type="submit">Find flights ↗</button>
+  </div>
+ </form>
+</div>
+<section class="section" id="destinations">
+ <div class="section-head"><div><div class="kicker">Little escapes, big memories</div><h2>Where to next?</h2></div><p>Three ideas for your next window-seat daydream. Pick a destination and start exploring.</p></div>
+ <div class="destinations">
+  <article class="destination dest1" data-city="BOM"><div class="photo"></div><div class="dest-info"><div><small>INDIA · CITY LIGHTS</small><h3>Mumbai</h3></div><div class="price">From ₹4,299</div></div></article>
+  <article class="destination dest2" data-city="CDG"><div class="photo"></div><div class="dest-info"><div><small>FRANCE · SLOW MORNINGS</small><h3>Paris</h3></div><div class="price">From ₹32,499</div></div></article>
+  <article class="destination dest3" data-city="NRT"><div class="photo"></div><div class="dest-info"><div><small>JAPAN · NEON NIGHTS</small><h3>Tokyo</h3></div><div class="price">From ₹28,799</div></div></article>
+ </div>
+</section>
+<section class="section" id="why">
+ <div class="section-head"><div><div class="kicker">The nicer way to fly</div><h2>Travel, minus the turbulence.</h2></div></div>
+ <div class="perks">
+  <article class="perk"><div class="perk-icon">🪟</div><h3>Your seat, your rules</h3><p>Window, aisle, extra legroom — choose the spot that makes the miles feel shorter.</p></article>
+  <article class="perk"><div class="perk-icon">✦</div><h3>Clear from takeoff</h3><p>See your fare and seat fee before you continue. No mysterious last-minute surprises.</p></article>
+  <article class="perk"><div class="perk-icon">☁</div><h3>Made for daydreamers</h3><p>A calm, simple booking flow that keeps the exciting part — your trip — in focus.</p></article>
+ </div>
+</section>
+<footer class="footer"><div class="brand"><span class="brandmark">↗</span> SKYBOUND.</div><span>Made for the places you haven't met yet.</span><span>Demo experience · No real tickets are issued</span></footer>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal-backdrop" id="bookingModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+ <div class="modal">
+  <div class="modal-top"><div><h2 id="modalTitle">Make yourself at home.</h2><p id="modalSubtitle">Choose your seat before you take off.</p></div><button class="close" id="closeModal" aria-label="Close">×</button></div>
+  <div class="steps"><span class="step active" id="step1">01 · Choose a seat</span><span class="step" id="step2">02 · Passenger details</span><span class="step" id="step3">03 · Your itinerary</span></div>
+  <div class="booking-content">
+   <div id="seatStage">
+    <div class="booking-grid">
+     <div class="panel"><h3>Your cabin, your call.</h3><p class="sub">Select up to <span id="seatLimit">1</span> seat(s). Seats with a silver outline have extra legroom.</p>
+      <div class="seat-legend"><span class="legend-item"><i class="seat-dot"></i> Available</span><span class="legend-item"><i class="seat-dot selected"></i> Selected</span><span class="legend-item"><i class="seat-dot occupied"></i> Taken</span><span class="legend-item"><i class="seat-dot extra"></i> Extra legroom +₹650</span></div>
+      <div class="plane-cabin"><div class="cockpit">✦ &nbsp; FRONT OF AIRCRAFT &nbsp; ✦</div><div class="seat-letters"><span>A</span><span>B</span><span>C</span><span></span><span>D</span><span>E</span><span>F</span></div><div id="seatMap"></div></div>
+     </div>
+     <div class="panel"><h3>Your flight</h3><p class="sub" id="flightMeta">SKYBOUND · SB 204</p>
+      <div class="summary-route"><div class="airport"><strong id="fromCode">DEL</strong><small id="fromCity">New Delhi</small></div><div class="route-line"><span>✈</span></div><div class="airport" style="text-align:right"><strong id="toCode">BOM</strong><small id="toCity">Mumbai</small></div></div>
+      <div class="summary-item"><span>Departure</span><strong id="dateText">—</strong></div><div class="summary-item"><span>Flight time</span><strong>2h 15m</strong></div><div class="summary-item"><span>Base fare / person</span><strong id="baseFare">₹5,499</strong></div><div class="summary-item"><span>Selected seat(s)</span><strong id="seatLabel">None yet</strong></div><div class="summary-item"><span>Seat fees</span><strong id="seatFees">₹0</strong></div><div class="summary-item"><span>Extras</span><strong id="extrasFee">₹0</strong></div><div class="summary-item summary-total"><span>Total estimate</span><br><strong id="totalFare">₹5,499</strong></div>
+      <div class="addons" id="addons"><label class="addon"><input type="checkbox" data-price="1200"><span>🧳 Extra baggage <b>+₹1,200</b></span></label><label class="addon"><input type="checkbox" data-price="450"><span>🍽 Hot meal <b>+₹450</b></span></label><label class="addon"><input type="checkbox" data-price="300"><span>⚡ Priority boarding <b>+₹300</b></span></label></div><button class="continue" id="seatContinue" disabled>Continue to passenger details →</button><p class="fineprint">This is a front-end demo. Prices and availability are illustrative, and no payment or real reservation is made.</p>
+     </div>
+    </div>
+   </div>
+   <div id="passengerStage" class="hidden">
+    <div class="booking-grid"><div class="panel"><h3>Who’s flying?</h3><p class="sub">Lead passenger details for your demo itinerary.</p><form id="passengerForm" class="passenger-fields"><div><label for="firstName">FIRST NAME</label><input id="firstName" required placeholder="First name"></div><div><label for="lastName">LAST NAME</label><input id="lastName" required placeholder="Last name"></div><div style="grid-column:1/-1"><label for="email">EMAIL ADDRESS</label><input id="email" type="email" required placeholder="you@example.com"></div><div style="grid-column:1/-1"><label for="phone">PHONE (OPTIONAL)</label><input id="phone" type="tel" placeholder="+91"></div><button class="continue" type="submit" style="grid-column:1/-1">Create demo itinerary ↗</button></form><button class="continue alt" id="backSeats">← Back to seat selection</button></div><div class="panel"><h3>Almost airborne.</h3><p class="sub">Your choices so far</p><div class="summary-item"><span>Route</span><strong id="passRoute">DEL → BOM</strong></div><div class="summary-item"><span>Seat(s)</span><strong id="passSeats">—</strong></div><div class="summary-item"><span>Passengers</span><strong id="passCount">1 adult</strong></div><div class="summary-item summary-total"><span>Estimated total</span><br><strong id="passTotal">₹5,499</strong></div><p class="fineprint">No payment details required. This demo does not reserve a real airline seat.</p></div></div>
+   </div>
+   <div id="successStage" class="hidden success"><div class="check">✈️</div><div class="kicker">All set for the daydream</div><h3>Your demo itinerary is ready.</h3><p>This is a sample confirmation only — no real flight has been booked.<br>Your itinerary details are shown below.</p><div class="ticket"><div class="brand"><span class="brandmark">↗</span> SKYBOUND.</div><div class="ticket-row"><div><strong id="ticketFrom">DEL</strong><small id="ticketFromCity">New Delhi</small></div><div class="ticket-line"><svg><use href="#jet"/></svg></div><div style="text-align:right"><strong id="ticketTo">BOM</strong><small id="ticketToCity">Mumbai</small></div></div><div class="ticket-row"><div><small>PASSENGER</small><strong style="font-size:14px" id="ticketName">—</strong></div><div><small>SEAT</small><strong style="font-size:14px" id="ticketSeat">—</strong></div><div style="text-align:right"><small>EST. TOTAL</small><strong style="font-size:14px" id="ticketTotal">—</strong></div></div><div class="ticket-row"><div><small>DEPARTURE</small><strong style="font-size:13px" id="ticketDate">—</strong></div><div style="text-align:right"><small>REFERENCE</small><strong style="font-size:13px" id="ticketRef">SB-DEMO</strong></div></div></div><button class="continue" id="finishBooking" style="max-width:300px">Back to Skybound</button></div>
+  </div>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const cities={DEL:'New Delhi',GAU:'Guwahati',BOM:'Mumbai',BLR:'Bengaluru',MAA:'Chennai',CCU:'Kolkata',JRH:'Jorhat',HYD:'Hyderabad',DXB:'Dubai',SIN:'Singapore',CDG:'Paris',NRT:'Tokyo',LHR:'London',JFK:'New York',DPS:'Bali'};
+const fares={DEL:5499,GAU:3299,BOM:4299,BLR:4999,MAA:4699,CCU:3899,JRH:2799,HYD:4499,DXB:18499,SIN:16999,CDG:32499,NRT:28799,LHR:34999,JFK:52999,DPS:24999};
+let tripType='round',selectedSeats=[],flight={from:'DEL',to:'BOM',date:'',fare:5499},passengerCount=1;
+const today=new Date();today.setMinutes(today.getMinutes()-today.getTimezoneOffset());const todayStr=today.toISOString().slice(0,10);
+$('depart').min=todayStr;$('depart').value=todayStr;
+const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+7);$('return').min=todayStr;$('return').value=tomorrow.toISOString().slice(0,10);
+document.querySelectorAll('.trip-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.trip-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');tripType=btn.dataset.trip;$('returnField').classList.toggle('hidden',tripType==='one');}));
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function money(n){return '₹'+n.toLocaleString('en-IN')}
+function openBooking(from,to){if(from===to){toast('Choose two different airports to take off.');return}flight.from=from;flight.to=to;flight.date=$('depart').value||todayStr;passengerCount=+$('pax').value;flight.fare=Math.round((fares[from]||3999)*$('cabin').value/50)*50;$('flightMeta').textContent='SKYBOUND · SB '+(200+Math.floor(Math.random()*700))+' · '+$('cabin').selectedOptions[0].text;document.querySelectorAll('#addons input').forEach(i=>i.checked=false);selectedSeats=[];renderSeats();updateSummary();$('seatStage').classList.remove('hidden');$('passengerStage').classList.add('hidden');$('successStage').classList.add('hidden');$('step1').classList.add('active');$('step2').classList.remove('active');$('step3').classList.remove('active');$('modalTitle').textContent='Make yourself at home.';$('modalSubtitle').textContent='Choose your seat before you take off.';$('bookingModal').classList.add('open');document.body.style.overflow='hidden'}
+$('searchForm').addEventListener('submit',e=>{e.preventDefault();const from=$('from').value,to=$('to').value;if(!$('depart').value){toast('Choose a departure date first.');return}if(tripType==='round'&&$('return').value<$('depart').value){toast('Your return date should be after departure.');return}openBooking(from,to)});
+document.querySelectorAll('.destination').forEach(card=>card.addEventListener('click',()=>{const to=card.dataset.city;$('to').value=to;if($('from').value===to)$('from').value=to==='DEL'?'GAU':'DEL';$('book').scrollIntoView({behavior:'smooth'});toast(cities[to]+' selected as your destination. Press Find flights when ready.')}));
+$('closeModal').addEventListener('click',closeModal);$('bookingModal').addEventListener('click',e=>{if(e.target===$('bookingModal'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});function closeModal(){$('bookingModal').classList.remove('open');document.body.style.overflow=''}
+function renderSeats(){const map=$('seatMap');map.innerHTML='';const occupied=new Set(['1B','2E','3A','3F','4C','5D','6B','7E','8A','8F','9C','10D','11A','12F']);for(let row=1;row<=12;row++){const label=document.createElement('div');label.className='row-num';label.textContent='ROW '+row;map.appendChild(label);const rowEl=document.createElement('div');rowEl.className='seat-row';['A','B','C','aisle','D','E','F'].forEach(letter=>{if(letter==='aisle'){const aisle=document.createElement('div');aisle.className='aisle';rowEl.appendChild(aisle);return}const id=row+letter;const seat=document.createElement('button');seat.type='button';seat.className='seat';seat.textContent=letter;if(occupied.has(id)){seat.classList.add('occupied');seat.disabled=true;seat.title='Seat already taken'}else{if(row<=2)seat.classList.add('extra');if(selectedSeats.includes(id))seat.classList.add('selected');seat.addEventListener('click',()=>toggleSeat(id))}rowEl.appendChild(seat)});map.appendChild(rowEl)}}
+function toggleSeat(id){if(selectedSeats.includes(id))selectedSeats=selectedSeats.filter(s=>s!==id);else{if(selectedSeats.length>=passengerCount){toast('You can select '+passengerCount+' seat(s) for this demo.');return}selectedSeats.push(id)}renderSeats();updateSummary()}
+function seatCost(id){return Number(id.slice(0,-1))<=2?650:0}
+function updateSummary(){const from=flight.from,to=flight.to;$('fromCode').textContent=from;$('toCode').textContent=to;$('fromCity').textContent=cities[from];$('toCity').textContent=cities[to];$('dateText').textContent=new Date(flight.date+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});$('baseFare').textContent=money(flight.fare);$('seatLabel').textContent=selectedSeats.length?selectedSeats.join(', '):'None yet';const fees=selectedSeats.reduce((sum,s)=>sum+seatCost(s),0);$('seatFees').textContent=money(fees);const ex=[...document.querySelectorAll('#addons input:checked')].reduce((s,i)=>s+ +i.dataset.price,0);$('extrasFee').textContent=money(ex);setNum($('totalFare'),flight.fare*passengerCount+fees+ex);$('seatContinue').disabled=selectedSeats.length!==passengerCount;$('seatLimit').textContent=passengerCount}
+$('seatContinue').addEventListener('click',()=>{if(selectedSeats.length!==passengerCount)return;$('seatStage').classList.add('hidden');$('passengerStage').classList.remove('hidden');$('step1').classList.remove('active');$('step2').classList.add('active');$('modalTitle').textContent='Who’s coming along?';$('modalSubtitle').textContent='Just the details we need for your demo itinerary.';$('passRoute').textContent=flight.from+' → '+flight.to;$('passCount').textContent=passengerCount+' adult'+(passengerCount>1?'s':'');$('passSeats').textContent=selectedSeats.join(', ');$('passTotal').textContent=$('totalFare').textContent});
+$('backSeats').addEventListener('click',()=>{$('passengerStage').classList.add('hidden');$('seatStage').classList.remove('hidden');$('step2').classList.remove('active');$('step1').classList.add('active');$('modalTitle').textContent='Make yourself at home.';$('modalSubtitle').textContent='Choose your seat before you take off.'});
+$('passengerForm').addEventListener('submit',e=>{e.preventDefault();const first=$('firstName').value.trim(),last=$('lastName').value.trim();$('ticketFrom').textContent=flight.from;$('ticketTo').textContent=flight.to;$('ticketFromCity').textContent=cities[flight.from];$('ticketToCity').textContent=cities[flight.to];$('ticketName').textContent=first+' '+last;$('ticketSeat').textContent=selectedSeats.join(', ');$('ticketTotal').textContent=$('totalFare').textContent;$('ticketDate').textContent=new Date(flight.date+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});$('ticketRef').textContent='SB-'+Math.random().toString(36).slice(2,7).toUpperCase();$('passengerStage').classList.add('hidden');$('successStage').classList.remove('hidden');$('step2').classList.remove('active');$('step3').classList.add('active');$('modalTitle').textContent='A little trip is taking shape.';$('modalSubtitle').textContent='Your sample itinerary is ready.'});
+$('finishBooking').addEventListener('click',closeModal);
+</script>
+<script>
+
+// Lightweight canvas globe: no 3D library or map API required.
+(()=>{
+ const canvas=$('worldGlobe'); if(!canvas)return;
+ const ctx=canvas.getContext('2d',{alpha:true});
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const CITIES=[
+  {code:'BOM',name:'Mumbai, India',lat:19.0896,lon:72.8656},
+  {code:'DEL',name:'New Delhi, India',lat:28.5562,lon:77.1},
+  {code:'GAU',name:'Guwahati, India',lat:26.1061,lon:91.5859},
+  {code:'DXB',name:'Dubai, UAE',lat:25.2532,lon:55.3657},
+  {code:'SIN',name:'Singapore',lat:1.3644,lon:103.9915},
+  {code:'CDG',name:'Paris, France',lat:49.0097,lon:2.5479},
+  {code:'NRT',name:'Tokyo, Japan',lat:35.772,lon:140.3929},
+  {code:'LHR',name:'London, UK',lat:51.47,lon:-0.4543},
+  {code:'JFK',name:'New York, USA',lat:40.6413,lon:-73.7781},
+  {code:'DPS',name:'Bali, Indonesia',lat:-8.7482,lon:115.1672}
+ ];
+ // Land dots sampled from Natural Earth country boundaries (WGS84), rather than hand-drawn approximate continent shapes.
+ const landPoints=[[-55.0,-69.0],[-55.0,-66.8],[-52.8,-73.4],[-52.8,-71.2],[-52.8,-69.0],[-50.6,-73.4],[-50.6,-71.2],[-48.4,-73.4],[-48.4,-71.2],[-48.4,-69.0],[-48.4,-66.8],[-46.2,-73.4],[-46.2,-71.2],[-46.2,-69.0],[-46.2,168.6],[-44.0,-71.2],[-44.0,-69.0],[-44.0,-66.8],[-44.0,170.8],[-41.8,-73.4],[-41.8,-71.2],[-41.8,-69.0],[-41.8,-66.8],[-41.8,146.6],[-41.8,173.0],[-39.6,-73.4],[-39.6,-71.2],[-39.6,-69.0],[-39.6,-66.8],[-39.6,-64.6],[-39.6,-62.4],[-39.6,175.2],[-37.4,-73.4],[-37.4,-71.2],[-37.4,-69.0],[-37.4,-66.8],[-37.4,-64.6],[-37.4,-62.4],[-37.4,-60.2],[-37.4,-58.0],[-37.4,140.0],[-37.4,142.2],[-37.4,144.4],[-37.4,146.6],[-37.4,148.8],[-37.4,175.2],[-35.2,-71.2],[-35.2,-69.0],[-35.2,-66.8],[-35.2,-64.6],[-35.2,-62.4],[-35.2,-60.2],[-35.2,-58.0],[-35.2,140.0],[-35.2,142.2],[-35.2,144.4],[-35.2,146.6],[-35.2,148.8],[-33.0,-71.2],[-33.0,-69.0],[-33.0,-66.8],[-33.0,-64.6],[-33.0,-62.4],[-33.0,-60.2],[-33.0,-58.0],[-33.0,-55.8],[-33.0,-53.6],[-33.0,19.0],[-33.0,21.2],[-33.0,23.4],[-33.0,25.6],[-33.0,27.8],[-33.0,115.8],[-33.0,118.0],[-33.0,120.2],[-33.0,122.4],[-33.0,135.6],[-33.0,140.0],[-33.0,142.2],[-33.0,144.4],[-33.0,146.6],[-33.0,148.8],[-33.0,151.0],[-30.8,-71.2],[-30.8,-69.0],[-30.8,-66.8],[-30.8,-64.6],[-30.8,-62.4],[-30.8,-60.2],[-30.8,-58.0],[-30.8,-55.8],[-30.8,-53.6],[-30.8,-51.4],[-30.8,19.0],[-30.8,21.2],[-30.8,23.4],[-30.8,25.6],[-30.8,27.8],[-30.8,30.0],[-30.8,115.8],[-30.8,118.0],[-30.8,120.2],[-30.8,122.4],[-30.8,124.6],[-30.8,126.8],[-30.8,129.0],[-30.8,131.2],[-30.8,133.4],[-30.8,135.6],[-30.8,137.8],[-30.8,140.0],[-30.8,142.2],[-30.8,144.4],[-30.8,146.6],[-30.8,148.8],[-30.8,151.0],[-28.6,-71.2],[-28.6,-69.0],[-28.6,-66.8],[-28.6,-64.6],[-28.6,-62.4],[-28.6,-60.2],[-28.6,-58.0],[-28.6,-55.8],[-28.6,-53.6],[-28.6,-51.4],[-28.6,-49.2],[-28.6,16.8],[-28.6,19.0],[-28.6,21.2],[-28.6,23.4],[-28.6,25.6],[-28.6,27.8],[-28.6,30.0],[-28.6,32.2],[-28.6,115.8],[-28.6,118.0],[-28.6,120.2],[-28.6,122.4],[-28.6,124.6],[-28.6,126.8],[-28.6,129.0],[-28.6,131.2],[-28.6,133.4],[-28.6,135.6],[-28.6,137.8],[-28.6,140.0],[-28.6,142.2],[-28.6,144.4],[-28.6,146.6],[-28.6,148.8],[-28.6,151.0],[-28.6,153.2],[-26.4,-69.0],[-26.4,-66.8],[-26.4,-64.6],[-26.4,-62.4],[-26.4,-60.2],[-26.4,-58.0],[-26.4,-55.8],[-26.4,-53.6],[-26.4,-51.4],[-26.4,-49.2],[-26.4,16.8],[-26.4,19.0],[-26.4,21.2],[-26.4,23.4],[-26.4,25.6],[-26.4,27.8],[-26.4,30.0],[-26.4,32.2],[-26.4,113.6],[-26.4,115.8],[-26.4,118.0],[-26.4,120.2],[-26.4,122.4],[-26.4,124.6],[-26.4,126.8],[-26.4,129.0],[-26.4,131.2],[-26.4,133.4],[-26.4,135.6],[-26.4,137.8],[-26.4,140.0],[-26.4,142.2],[-26.4,144.4],[-26.4,146.6],[-26.4,148.8],[-26.4,151.0],[-24.2,-69.0],[-24.2,-66.8],[-24.2,-64.6],[-24.2,-62.4],[-24.2,-60.2],[-24.2,-58.0],[-24.2,-55.8],[-24.2,-53.6],[-24.2,-51.4],[-24.2,-49.2],[-24.2,-47.0],[-24.2,14.6],[-24.2,16.8],[-24.2,19.0],[-24.2,21.2],[-24.2,23.4],[-24.2,25.6],[-24.2,27.8],[-24.2,30.0],[-24.2,32.2],[-24.2,34.4],[-24.2,45.4],[-24.2,113.6],[-24.2,115.8],[-24.2,118.0],[-24.2,120.2],[-24.2,122.4],[-24.2,124.6],[-24.2,126.8],[-24.2,129.0],[-24.2,131.2],[-24.2,133.4],[-24.2,135.6],[-24.2,137.8],[-24.2,140.0],[-24.2,142.2],[-24.2,144.4],[-24.2,146.6],[-24.2,148.8],[-24.2,151.0],[-22.0,-69.0],[-22.0,-66.8],[-22.0,-64.6],[-22.0,-62.4],[-22.0,-60.2],[-22.0,-58.0],[-22.0,-55.8],[-22.0,-53.6],[-22.0,-51.4],[-22.0,-49.2],[-22.0,-47.0],[-22.0,-44.8],[-22.0,-42.6],[-22.0,14.6],[-22.0,16.8],[-22.0,19.0],[-22.0,21.2],[-22.0,23.4],[-22.0,25.6],[-22.0,27.8],[-22.0,30.0],[-22.0,32.2],[-22.0,34.4],[-22.0,45.4],[-22.0,47.6],[-22.0,115.8],[-22.0,118.0],[-22.0,120.2],[-22.0,122.4],[-22.0,124.6],[-22.0,126.8],[-22.0,129.0],[-22.0,131.2],[-22.0,133.4],[-22.0,135.6],[-22.0,137.8],[-22.0,140.0],[-22.0,142.2],[-22.0,144.4],[-22.0,146.6],[-22.0,148.8],[-22.0,166.4],[-19.8,-69.0],[-19.8,-66.8],[-19.8,-64.6],[-19.8,-62.4],[-19.8,-60.2],[-19.8,-58.0],[-19.8,-55.8],[-19.8,-53.6],[-19.8,-51.4],[-19.8,-49.2],[-19.8,-47.0],[-19.8,-44.8],[-19.8,-42.6],[-19.8,-40.4],[-19.8,14.6],[-19.8,16.8],[-19.8,19.0],[-19.8,21.2],[-19.8,23.4],[-19.8,25.6],[-19.8,27.8],[-19.8,30.0],[-19.8,32.2],[-19.8,34.4],[-19.8,45.4],[-19.8,47.6],[-19.8,122.4],[-19.8,124.6],[-19.8,126.8],[-19.8,129.0],[-19.8,131.2],[-19.8,133.4],[-19.8,135.6],[-19.8,137.8],[-19.8,140.0],[-19.8,142.2],[-19.8,144.4],[-19.8,146.6],[-17.6,-71.2],[-17.6,-69.0],[-17.6,-66.8],[-17.6,-64.6],[-17.6,-62.4],[-17.6,-60.2],[-17.6,-58.0],[-17.6,-55.8],[-17.6,-53.6],[-17.6,-51.4],[-17.6,-49.2],[-17.6,-47.0],[-17.6,-44.8],[-17.6,-42.6],[-17.6,-40.4],[-17.6,12.4],[-17.6,14.6],[-17.6,16.8],[-17.6,19.0],[-17.6,21.2],[-17.6,23.4],[-17.6,25.6],[-17.6,27.8],[-17.6,30.0],[-17.6,32.2],[-17.6,34.4],[-17.6,36.6],[-17.6,45.4],[-17.6,47.6],[-17.6,122.4],[-17.6,124.6],[-17.6,126.8],[-17.6,129.0],[-17.6,131.2],[-17.6,133.4],[-17.6,135.6],[-17.6,137.8],[-17.6,142.2],[-17.6,144.4],[-15.4,-73.4],[-15.4,-71.2],[-15.4,-69.0],[-15.4,-66.8],[-15.4,-64.6],[-15.4,-62.4],[-15.4,-60.2],[-15.4,-58.0],[-15.4,-55.8],[-15.4,-53.6],[-15.4,-51.4],[-15.4,-49.2],[-15.4,-47.0],[-15.4,-44.8],[-15.4,-42.6],[-15.4,-40.4],[-15.4,12.4],[-15.4,14.6],[-15.4,16.8],[-15.4,19.0],[-15.4,21.2],[-15.4,23.4],[-15.4,25.6],[-15.4,27.8],[-15.4,30.0],[-15.4,32.2],[-15.4,34.4],[-15.4,36.6],[-15.4,38.8],[-15.4,47.6],[-15.4,49.8],[-15.4,124.6],[-15.4,126.8],[-15.4,129.0],[-15.4,131.2],[-15.4,133.4],[-15.4,135.6],[-15.4,142.2],[-15.4,144.4],[-13.2,-75.6],[-13.2,-73.4],[-13.2,-71.2],[-13.2,-69.0],[-13.2,-66.8],[-13.2,-64.6],[-13.2,-62.4],[-13.2,-60.2],[-13.2,-58.0],[-13.2,-55.8],[-13.2,-53.6],[-13.2,-51.4],[-13.2,-49.2],[-13.2,-47.0],[-13.2,-44.8],[-13.2,-42.6],[-13.2,-40.4],[-13.2,14.6],[-13.2,16.8],[-13.2,19.0],[-13.2,21.2],[-13.2,23.4],[-13.2,25.6],[-13.2,27.8],[-13.2,30.0],[-13.2,32.2],[-13.2,34.4],[-13.2,36.6],[-13.2,38.8],[-13.2,49.8],[-13.2,131.2],[-13.2,133.4],[-13.2,135.6],[-13.2,142.2],[-11.0,-75.6],[-11.0,-73.4],[-11.0,-71.2],[-11.0,-69.0],[-11.0,-66.8],[-11.0,-64.6],[-11.0,-62.4],[-11.0,-60.2],[-11.0,-58.0],[-11.0,-55.8],[-11.0,-53.6],[-11.0,-51.4],[-11.0,-49.2],[-11.0,-47.0],[-11.0,-44.8],[-11.0,-42.6],[-11.0,-40.4],[-11.0,-38.2],[-11.0,14.6],[-11.0,16.8],[-11.0,19.0],[-11.0,21.2],[-11.0,23.4],[-11.0,25.6],[-11.0,27.8],[-11.0,30.0],[-11.0,32.2],[-11.0,34.4],[-11.0,36.6],[-11.0,38.8],[-11.0,142.2],[-8.8,-77.8],[-8.8,-75.6],[-8.8,-73.4],[-8.8,-71.2],[-8.8,-69.0],[-8.8,-66.8],[-8.8,-64.6],[-8.8,-62.4],[-8.8,-60.2],[-8.8,-58.0],[-8.8,-55.8],[-8.8,-53.6],[-8.8,-51.4],[-8.8,-49.2],[-8.8,-47.0],[-8.8,-44.8],[-8.8,-42.6],[-8.8,-40.4],[-8.8,-38.2],[-8.8,-36.0],[-8.8,14.6],[-8.8,16.8],[-8.8,19.0],[-8.8,21.2],[-8.8,23.4],[-8.8,25.6],[-8.8,27.8],[-8.8,30.0],[-8.8,32.2],[-8.8,34.4],[-8.8,36.6],[-8.8,38.8],[-8.8,118.0],[-8.8,120.2],[-8.8,142.2],[-8.8,146.6],[-6.6,-80.0],[-6.6,-77.8],[-6.6,-75.6],[-6.6,-73.4],[-6.6,-71.2],[-6.6,-69.0],[-6.6,-66.8],[-6.6,-64.6],[-6.6,-62.4],[-6.6,-60.2],[-6.6,-58.0],[-6.6,-55.8],[-6.6,-53.6],[-6.6,-51.4],[-6.6,-49.2],[-6.6,-47.0],[-6.6,-44.8],[-6.6,-42.6],[-6.6,-40.4],[-6.6,-38.2],[-6.6,-36.0],[-6.6,14.6],[-6.6,16.8],[-6.6,19.0],[-6.6,21.2],[-6.6,23.4],[-6.6,25.6],[-6.6,27.8],[-6.6,30.0],[-6.6,32.2],[-6.6,34.4],[-6.6,36.6],[-6.6,38.8],[-6.6,107.0],[-6.6,140.0],[-6.6,142.2],[-6.6,144.4],[-6.6,146.6],[-6.6,155.4],[-4.4,-80.0],[-4.4,-77.8],[-4.4,-75.6],[-4.4,-73.4],[-4.4,-71.2],[-4.4,-69.0],[-4.4,-66.8],[-4.4,-64.6],[-4.4,-62.4],[-4.4,-60.2],[-4.4,-58.0],[-4.4,-55.8],[-4.4,-53.6],[-4.4,-51.4],[-4.4,-49.2],[-4.4,-47.0],[-4.4,-44.8],[-4.4,-42.6],[-4.4,-40.4],[-4.4,-38.2],[-4.4,12.4],[-4.4,14.6],[-4.4,16.8],[-4.4,19.0],[-4.4,21.2],[-4.4,23.4],[-4.4,25.6],[-4.4,27.8],[-4.4,30.0],[-4.4,32.2],[-4.4,34.4],[-4.4,36.6],[-4.4,38.8],[-4.4,104.8],[-4.4,120.2],[-4.4,122.4],[-4.4,135.6],[-4.4,137.8],[-4.4,140.0],[-4.4,142.2],[-4.4,144.4],[-2.2,-80.0],[-2.2,-77.8],[-2.2,-75.6],[-2.2,-73.4],[-2.2,-71.2],[-2.2,-69.0],[-2.2,-66.8],[-2.2,-64.6],[-2.2,-62.4],[-2.2,-60.2],[-2.2,-58.0],[-2.2,-55.8],[-2.2,-53.6],[-2.2,-51.4],[-2.2,-49.2],[-2.2,-47.0],[-2.2,-44.8],[-2.2,10.2],[-2.2,12.4],[-2.2,14.6],[-2.2,16.8],[-2.2,19.0],[-2.2,21.2],[-2.2,23.4],[-2.2,25.6],[-2.2,27.8],[-2.2,30.0],[-2.2,32.2],[-2.2,34.4],[-2.2,36.6],[-2.2,38.8],[-2.2,102.6],[-2.2,104.8],[-2.2,111.4],[-2.2,113.6],[-2.2,115.8],[-2.2,120.2],[-2.2,133.4],[-2.2,137.8],[0.0,-80.0],[0.0,-77.8],[0.0,-75.6],[0.0,-73.4],[0.0,-71.2],[0.0,-69.0],[0.0,-66.8],[0.0,-64.6],[0.0,-62.4],[0.0,-60.2],[0.0,-58.0],[0.0,-55.8],[0.0,-53.6],[0.0,-51.4],[0.0,10.2],[0.0,12.4],[0.0,14.6],[0.0,16.8],[0.0,19.0],[0.0,21.2],[0.0,23.4],[0.0,25.6],[0.0,27.8],[0.0,30.0],[0.0,32.2],[0.0,34.4],[0.0,36.6],[0.0,38.8],[0.0,41.0],[0.0,100.4],[0.0,102.6],[0.0,109.2],[0.0,111.4],[0.0,113.6],[0.0,115.8],[2.2,-77.8],[2.2,-75.6],[2.2,-73.4],[2.2,-71.2],[2.2,-69.0],[2.2,-66.8],[2.2,-64.6],[2.2,-62.4],[2.2,-60.2],[2.2,-58.0],[2.2,-55.8],[2.2,-53.6],[2.2,-51.4],[2.2,10.2],[2.2,12.4],[2.2,14.6],[2.2,16.8],[2.2,19.0],[2.2,21.2],[2.2,23.4],[2.2,25.6],[2.2,27.8],[2.2,30.0],[2.2,32.2],[2.2,34.4],[2.2,36.6],[2.2,38.8],[2.2,41.0],[2.2,43.2],[2.2,45.4],[2.2,98.2],[2.2,100.4],[2.2,102.6],[2.2,111.4],[2.2,113.6],[2.2,115.8],[2.2,118.0],[4.4,-75.6],[4.4,-73.4],[4.4,-71.2],[4.4,-69.0],[4.4,-66.8],[4.4,-64.6],[4.4,-62.4],[4.4,-60.2],[4.4,-58.0],[4.4,-55.8],[4.4,-53.6],[4.4,-7.4],[4.4,5.8],[4.4,10.2],[4.4,12.4],[4.4,14.6],[4.4,16.8],[4.4,19.0],[4.4,21.2],[4.4,23.4],[4.4,25.6],[4.4,27.8],[4.4,30.0],[4.4,32.2],[4.4,34.4],[4.4,36.6],[4.4,38.8],[4.4,41.0],[4.4,43.2],[4.4,45.4],[4.4,47.6],[4.4,96.0],[4.4,98.2],[4.4,102.6],[4.4,115.8],[4.4,118.0],[6.6,-75.6],[6.6,-73.4],[6.6,-71.2],[6.6,-69.0],[6.6,-66.8],[6.6,-64.6],[6.6,-62.4],[6.6,-60.2],[6.6,-58.0],[6.6,-9.6],[6.6,-7.4],[6.6,-5.2],[6.6,-3.0],[6.6,-0.8],[6.6,1.4],[6.6,3.6],[6.6,5.8],[6.6,8.0],[6.6,10.2],[6.6,12.4],[6.6,14.6],[6.6,16.8],[6.6,19.0],[6.6,21.2],[6.6,23.4],[6.6,25.6],[6.6,27.8],[6.6,30.0],[6.6,32.2],[6.6,34.4],[6.6,36.6],[6.6,38.8],[6.6,41.0],[6.6,43.2],[6.6,45.4],[6.6,47.6],[6.6,80.6],[6.6,100.4],[6.6,124.6],[8.8,-82.2],[8.8,-80.0],[8.8,-77.8],[8.8,-75.6],[8.8,-73.4],[8.8,-71.2],[8.8,-69.0],[8.8,-66.8],[8.8,-64.6],[8.8,-62.4],[8.8,-11.8],[8.8,-9.6],[8.8,-7.4],[8.8,-5.2],[8.8,-3.0],[8.8,-0.8],[8.8,1.4],[8.8,3.6],[8.8,5.8],[8.8,8.0],[8.8,10.2],[8.8,12.4],[8.8,14.6],[8.8,16.8],[8.8,19.0],[8.8,21.2],[8.8,23.4],[8.8,25.6],[8.8,27.8],[8.8,30.0],[8.8,32.2],[8.8,34.4],[8.8,36.6],[8.8,38.8],[8.8,41.0],[8.8,43.2],[8.8,45.4],[8.8,47.6],[8.8,49.8],[8.8,80.6],[11.0,-84.4],[11.0,-73.4],[11.0,-71.2],[11.0,-69.0],[11.0,-14.0],[11.0,-11.8],[11.0,-9.6],[11.0,-7.4],[11.0,-5.2],[11.0,-3.0],[11.0,-0.8],[11.0,1.4],[11.0,3.6],[11.0,5.8],[11.0,8.0],[11.0,10.2],[11.0,12.4],[11.0,14.6],[11.0,16.8],[11.0,19.0],[11.0,21.2],[11.0,23.4],[11.0,25.6],[11.0,27.8],[11.0,30.0],[11.0,32.2],[11.0,34.4],[11.0,36.6],[11.0,38.8],[11.0,41.0],[11.0,43.2],[11.0,47.6],[11.0,49.8],[11.0,76.2],[11.0,78.4],[11.0,104.8],[11.0,107.0],[11.0,122.4],[11.0,124.6],[13.2,-86.6],[13.2,-84.4],[13.2,-16.2],[13.2,-14.0],[13.2,-11.8],[13.2,-9.6],[13.2,-7.4],[13.2,-5.2],[13.2,-3.0],[13.2,-0.8],[13.2,1.4],[13.2,3.6],[13.2,5.8],[13.2,8.0],[13.2,10.2],[13.2,12.4],[13.2,14.6],[13.2,16.8],[13.2,19.0],[13.2,21.2],[13.2,23.4],[13.2,25.6],[13.2,27.8],[13.2,30.0],[13.2,32.2],[13.2,34.4],[13.2,36.6],[13.2,38.8],[13.2,41.0],[13.2,45.4],[13.2,76.2],[13.2,78.4],[13.2,102.6],[13.2,104.8],[13.2,107.0],[13.2,109.2],[15.4,-91.0],[15.4,-88.8],[15.4,-86.6],[15.4,-84.4],[15.4,-16.2],[15.4,-14.0],[15.4,-11.8],[15.4,-9.6],[15.4,-7.4],[15.4,-5.2],[15.4,-3.0],[15.4,-0.8],[15.4,1.4],[15.4,3.6],[15.4,5.8],[15.4,8.0],[15.4,10.2],[15.4,12.4],[15.4,14.6],[15.4,16.8],[15.4,19.0],[15.4,21.2],[15.4,23.4],[15.4,25.6],[15.4,27.8],[15.4,30.0],[15.4,32.2],[15.4,34.4],[15.4,36.6],[15.4,38.8],[15.4,43.2],[15.4,45.4],[15.4,47.6],[15.4,49.8],[15.4,74.0],[15.4,76.2],[15.4,78.4],[15.4,98.2],[15.4,100.4],[15.4,102.6],[15.4,104.8],[15.4,107.0],[15.4,120.2],[17.6,-99.8],[17.6,-97.6],[17.6,-95.4],[17.6,-93.2],[17.6,-91.0],[17.6,-88.8],[17.6,-16.2],[17.6,-14.0],[17.6,-11.8],[17.6,-9.6],[17.6,-7.4],[17.6,-5.2],[17.6,-3.0],[17.6,-0.8],[17.6,1.4],[17.6,3.6],[17.6,5.8],[17.6,8.0],[17.6,10.2],[17.6,12.4],[17.6,14.6],[17.6,16.8],[17.6,19.0],[17.6,21.2],[17.6,23.4],[17.6,25.6],[17.6,27.8],[17.6,30.0],[17.6,32.2],[17.6,34.4],[17.6,36.6],[17.6,43.2],[17.6,45.4],[17.6,47.6],[17.6,49.8],[17.6,52.0],[17.6,54.2],[17.6,74.0],[17.6,76.2],[17.6,78.4],[17.6,80.6],[17.6,82.8],[17.6,96.0],[17.6,98.2],[17.6,100.4],[17.6,102.6],[17.6,104.8],[19.8,-104.2],[19.8,-102.0],[19.8,-99.8],[19.8,-97.6],[19.8,-88.8],[19.8,-71.2],[19.8,-16.2],[19.8,-14.0],[19.8,-11.8],[19.8,-9.6],[19.8,-7.4],[19.8,-5.2],[19.8,-3.0],[19.8,-0.8],[19.8,1.4],[19.8,3.6],[19.8,5.8],[19.8,8.0],[19.8,10.2],[19.8,12.4],[19.8,14.6],[19.8,16.8],[19.8,19.0],[19.8,21.2],[19.8,23.4],[19.8,25.6],[19.8,27.8],[19.8,30.0],[19.8,32.2],[19.8,34.4],[19.8,36.6],[19.8,41.0],[19.8,43.2],[19.8,45.4],[19.8,47.6],[19.8,49.8],[19.8,52.0],[19.8,54.2],[19.8,56.4],[19.8,74.0],[19.8,76.2],[19.8,78.4],[19.8,80.6],[19.8,82.8],[19.8,85.0],[19.8,93.8],[19.8,96.0],[19.8,98.2],[19.8,100.4],[19.8,102.6],[19.8,104.8],[19.8,109.2],[22.0,-104.2],[22.0,-102.0],[22.0,-99.8],[22.0,-84.4],[22.0,-80.0],[22.0,-77.8],[22.0,-16.2],[22.0,-14.0],[22.0,-11.8],[22.0,-9.6],[22.0,-7.4],[22.0,-5.2],[22.0,-3.0],[22.0,-0.8],[22.0,1.4],[22.0,3.6],[22.0,5.8],[22.0,8.0],[22.0,10.2],[22.0,12.4],[22.0,14.6],[22.0,16.8],[22.0,19.0],[22.0,21.2],[22.0,23.4],[22.0,25.6],[22.0,27.8],[22.0,30.0],[22.0,32.2],[22.0,34.4],[22.0,36.6],[22.0,41.0],[22.0,43.2],[22.0,45.4],[22.0,47.6],[22.0,49.8],[22.0,52.0],[22.0,54.2],[22.0,56.4],[22.0,58.6],[22.0,69.6],[22.0,71.8],[22.0,74.0],[22.0,76.2],[22.0,78.4],[22.0,80.6],[22.0,82.8],[22.0,85.0],[22.0,87.2],[22.0,89.4],[22.0,93.8],[22.0,96.0],[22.0,98.2],[22.0,100.4],[22.0,102.6],[22.0,104.8],[22.0,107.0],[22.0,109.2],[22.0,111.4],[24.2,-110.8],[24.2,-106.4],[24.2,-104.2],[24.2,-102.0],[24.2,-99.8],[24.2,-77.8],[24.2,-14.0],[24.2,-11.8],[24.2,-9.6],[24.2,-7.4],[24.2,-5.2],[24.2,-3.0],[24.2,-0.8],[24.2,1.4],[24.2,3.6],[24.2,5.8],[24.2,8.0],[24.2,10.2],[24.2,12.4],[24.2,14.6],[24.2,16.8],[24.2,19.0],[24.2,21.2],[24.2,23.4],[24.2,25.6],[24.2,27.8],[24.2,30.0],[24.2,32.2],[24.2,34.4],[24.2,38.8],[24.2,41.0],[24.2,43.2],[24.2,45.4],[24.2,47.6],[24.2,49.8],[24.2,54.2],[24.2,56.4],[24.2,67.4],[24.2,69.6],[24.2,71.8],[24.2,74.0],[24.2,76.2],[24.2,78.4],[24.2,80.6],[24.2,82.8],[24.2,85.0],[24.2,87.2],[24.2,89.4],[24.2,91.6],[24.2,93.8],[24.2,96.0],[24.2,98.2],[24.2,100.4],[24.2,102.6],[24.2,104.8],[24.2,107.0],[24.2,109.2],[24.2,111.4],[24.2,113.6],[24.2,115.8],[24.2,118.0],[26.4,-108.6],[26.4,-106.4],[26.4,-104.2],[26.4,-102.0],[26.4,-99.8],[26.4,-97.6],[26.4,-14.0],[26.4,-11.8],[26.4,-9.6],[26.4,-7.4],[26.4,-5.2],[26.4,-3.0],[26.4,-0.8],[26.4,1.4],[26.4,3.6],[26.4,5.8],[26.4,8.0],[26.4,10.2],[26.4,12.4],[26.4,14.6],[26.4,16.8],[26.4,19.0],[26.4,21.2],[26.4,23.4],[26.4,25.6],[26.4,27.8],[26.4,30.0],[26.4,32.2],[26.4,36.6],[26.4,38.8],[26.4,41.0],[26.4,43.2],[26.4,45.4],[26.4,47.6],[26.4,49.8],[26.4,58.6],[26.4,60.8],[26.4,63.0],[26.4,65.2],[26.4,67.4],[26.4,69.6],[26.4,71.8],[26.4,74.0],[26.4,76.2],[26.4,78.4],[26.4,80.6],[26.4,82.8],[26.4,85.0],[26.4,87.2],[26.4,89.4],[26.4,91.6],[26.4,93.8],[26.4,96.0],[26.4,98.2],[26.4,100.4],[26.4,102.6],[26.4,104.8],[26.4,107.0],[26.4,109.2],[26.4,111.4],[26.4,113.6],[26.4,115.8],[26.4,118.0],[28.6,-110.8],[28.6,-108.6],[28.6,-106.4],[28.6,-104.2],[28.6,-102.0],[28.6,-99.8],[28.6,-97.6],[28.6,-82.2],[28.6,-9.6],[28.6,-7.4],[28.6,-5.2],[28.6,-3.0],[28.6,-0.8],[28.6,1.4],[28.6,3.6],[28.6,5.8],[28.6,8.0],[28.6,10.2],[28.6,12.4],[28.6,14.6],[28.6,16.8],[28.6,19.0],[28.6,21.2],[28.6,23.4],[28.6,25.6],[28.6,27.8],[28.6,30.0],[28.6,32.2],[28.6,34.4],[28.6,36.6],[28.6,38.8],[28.6,41.0],[28.6,43.2],[28.6,45.4],[28.6,47.6],[28.6,52.0],[28.6,54.2],[28.6,56.4],[28.6,58.6],[28.6,60.8],[28.6,63.0],[28.6,65.2],[28.6,67.4],[28.6,69.6],[28.6,71.8],[28.6,74.0],[28.6,76.2],[28.6,78.4],[28.6,80.6],[28.6,82.8],[28.6,85.0],[28.6,87.2],[28.6,89.4],[28.6,91.6],[28.6,93.8],[28.6,96.0],[28.6,98.2],[28.6,100.4],[28.6,102.6],[28.6,104.8],[28.6,107.0],[28.6,109.2],[28.6,111.4],[28.6,113.6],[28.6,115.8],[28.6,118.0],[28.6,120.2],[30.8,-115.2],[30.8,-113.0],[30.8,-110.8],[30.8,-108.6],[30.8,-106.4],[30.8,-104.2],[30.8,-102.0],[30.8,-99.8],[30.8,-97.6],[30.8,-95.4],[30.8,-93.2],[30.8,-91.0],[30.8,-88.8],[30.8,-86.6],[30.8,-84.4],[30.8,-82.2],[30.8,-9.6],[30.8,-7.4],[30.8,-5.2],[30.8,-3.0],[30.8,-0.8],[30.8,1.4],[30.8,3.6],[30.8,5.8],[30.8,8.0],[30.8,10.2],[30.8,12.4],[30.8,14.6],[30.8,16.8],[30.8,21.2],[30.8,23.4],[30.8,25.6],[30.8,27.8],[30.8,30.0],[30.8,32.2],[30.8,34.4],[30.8,36.6],[30.8,38.8],[30.8,41.0],[30.8,43.2],[30.8,45.4],[30.8,47.6],[30.8,49.8],[30.8,52.0],[30.8,54.2],[30.8,56.4],[30.8,58.6],[30.8,60.8],[30.8,63.0],[30.8,65.2],[30.8,67.4],[30.8,69.6],[30.8,71.8],[30.8,74.0],[30.8,76.2],[30.8,78.4],[30.8,80.6],[30.8,82.8],[30.8,85.0],[30.8,87.2],[30.8,89.4],[30.8,91.6],[30.8,93.8],[30.8,96.0],[30.8,98.2],[30.8,100.4],[30.8,102.6],[30.8,104.8],[30.8,107.0],[30.8,109.2],[30.8,111.4],[30.8,113.6],[30.8,115.8],[30.8,118.0],[30.8,120.2],[33.0,-115.2],[33.0,-113.0],[33.0,-110.8],[33.0,-108.6],[33.0,-106.4],[33.0,-104.2],[33.0,-102.0],[33.0,-99.8],[33.0,-97.6],[33.0,-95.4],[33.0,-93.2],[33.0,-91.0],[33.0,-88.8],[33.0,-86.6],[33.0,-84.4],[33.0,-82.2],[33.0,-80.0],[33.0,-7.4],[33.0,-5.2],[33.0,-3.0],[33.0,-0.8],[33.0,1.4],[33.0,3.6],[33.0,5.8],[33.0,8.0],[33.0,10.2],[33.0,36.6],[33.0,38.8],[33.0,41.0],[33.0,43.2],[33.0,45.4],[33.0,47.6],[33.0,49.8],[33.0,52.0],[33.0,54.2],[33.0,56.4],[33.0,58.6],[33.0,60.8],[33.0,63.0],[33.0,65.2],[33.0,67.4],[33.0,69.6],[33.0,71.8],[33.0,74.0],[33.0,76.2],[33.0,78.4],[33.0,80.6],[33.0,82.8],[33.0,85.0],[33.0,87.2],[33.0,89.4],[33.0,91.6],[33.0,93.8],[33.0,96.0],[33.0,98.2],[33.0,100.4],[33.0,102.6],[33.0,104.8],[33.0,107.0],[33.0,109.2],[33.0,111.4],[33.0,113.6],[33.0,115.8],[33.0,118.0],[33.0,120.2],[33.0,131.2],[35.2,-119.6],[35.2,-117.4],[35.2,-115.2],[35.2,-113.0],[35.2,-110.8],[35.2,-108.6],[35.2,-106.4],[35.2,-104.2],[35.2,-102.0],[35.2,-99.8],[35.2,-97.6],[35.2,-95.4],[35.2,-93.2],[35.2,-91.0],[35.2,-88.8],[35.2,-86.6],[35.2,-84.4],[35.2,-82.2],[35.2,-80.0],[35.2,-77.8],[35.2,-5.2],[35.2,-3.0],[35.2,-0.8],[35.2,1.4],[35.2,3.6],[35.2,5.8],[35.2,8.0],[35.2,10.2],[35.2,25.6],[35.2,36.6],[35.2,38.8],[35.2,41.0],[35.2,43.2],[35.2,45.4],[35.2,47.6],[35.2,49.8],[35.2,52.0],[35.2,54.2],[35.2,56.4],[35.2,58.6],[35.2,60.8],[35.2,63.0],[35.2,65.2],[35.2,67.4],[35.2,69.6],[35.2,71.8],[35.2,74.0],[35.2,76.2],[35.2,78.4],[35.2,80.6],[35.2,82.8],[35.2,85.0],[35.2,87.2],[35.2,89.4],[35.2,91.6],[35.2,93.8],[35.2,96.0],[35.2,98.2],[35.2,100.4],[35.2,102.6],[35.2,104.8],[35.2,107.0],[35.2,109.2],[35.2,111.4],[35.2,113.6],[35.2,115.8],[35.2,118.0],[35.2,126.8],[35.2,129.0],[35.2,133.4],[35.2,135.6],[35.2,137.8],[35.2,140.0],[37.4,-121.8],[37.4,-119.6],[37.4,-117.4],[37.4,-115.2],[37.4,-113.0],[37.4,-110.8],[37.4,-108.6],[37.4,-106.4],[37.4,-104.2],[37.4,-102.0],[37.4,-99.8],[37.4,-97.6],[37.4,-95.4],[37.4,-93.2],[37.4,-91.0],[37.4,-88.8],[37.4,-86.6],[37.4,-84.4],[37.4,-82.2],[37.4,-80.0],[37.4,-77.8],[37.4,-7.4],[37.4,-5.2],[37.4,-3.0],[37.4,14.6],[37.4,27.8],[37.4,30.0],[37.4,32.2],[37.4,34.4],[37.4,36.6],[37.4,38.8],[37.4,41.0],[37.4,43.2],[37.4,45.4],[37.4,47.6],[37.4,49.8],[37.4,54.2],[37.4,56.4],[37.4,58.6],[37.4,60.8],[37.4,63.0],[37.4,65.2],[37.4,67.4],[37.4,69.6],[37.4,71.8],[37.4,74.0],[37.4,76.2],[37.4,78.4],[37.4,80.6],[37.4,82.8],[37.4,85.0],[37.4,87.2],[37.4,89.4],[37.4,91.6],[37.4,93.8],[37.4,96.0],[37.4,98.2],[37.4,100.4],[37.4,102.6],[37.4,104.8],[37.4,107.0],[37.4,109.2],[37.4,111.4],[37.4,113.6],[37.4,115.8],[37.4,118.0],[37.4,120.2],[37.4,126.8],[37.4,129.0],[37.4,140.0],[39.6,-121.8],[39.6,-119.6],[39.6,-117.4],[39.6,-115.2],[39.6,-113.0],[39.6,-110.8],[39.6,-108.6],[39.6,-106.4],[39.6,-104.2],[39.6,-102.0],[39.6,-99.8],[39.6,-97.6],[39.6,-95.4],[39.6,-93.2],[39.6,-91.0],[39.6,-88.8],[39.6,-86.6],[39.6,-84.4],[39.6,-82.2],[39.6,-80.0],[39.6,-77.8],[39.6,-75.6],[39.6,-7.4],[39.6,-5.2],[39.6,-3.0],[39.6,-0.8],[39.6,16.8],[39.6,21.2],[39.6,27.8],[39.6,30.0],[39.6,32.2],[39.6,34.4],[39.6,36.6],[39.6,38.8],[39.6,41.0],[39.6,43.2],[39.6,45.4],[39.6,47.6],[39.6,54.2],[39.6,56.4],[39.6,58.6],[39.6,60.8],[39.6,63.0],[39.6,65.2],[39.6,67.4],[39.6,69.6],[39.6,71.8],[39.6,74.0],[39.6,76.2],[39.6,78.4],[39.6,80.6],[39.6,82.8],[39.6,85.0],[39.6,87.2],[39.6,89.4],[39.6,91.6],[39.6,93.8],[39.6,96.0],[39.6,98.2],[39.6,100.4],[39.6,102.6],[39.6,104.8],[39.6,107.0],[39.6,109.2],[39.6,111.4],[39.6,113.6],[39.6,115.8],[39.6,118.0],[39.6,122.4],[39.6,126.8],[41.8,-124.0],[41.8,-121.8],[41.8,-119.6],[41.8,-117.4],[41.8,-115.2],[41.8,-113.0],[41.8,-110.8],[41.8,-108.6],[41.8,-106.4],[41.8,-104.2],[41.8,-102.0],[41.8,-99.8],[41.8,-97.6],[41.8,-95.4],[41.8,-93.2],[41.8,-91.0],[41.8,-88.8],[41.8,-86.6],[41.8,-84.4],[41.8,-82.2],[41.8,-80.0],[41.8,-77.8],[41.8,-75.6],[41.8,-73.4],[41.8,-71.2],[41.8,-7.4],[41.8,-5.2],[41.8,-3.0],[41.8,-0.8],[41.8,1.4],[41.8,12.4],[41.8,14.6],[41.8,21.2],[41.8,23.4],[41.8,25.6],[41.8,27.8],[41.8,34.4],[41.8,43.2],[41.8,45.4],[41.8,47.6],[41.8,54.2],[41.8,56.4],[41.8,58.6],[41.8,60.8],[41.8,63.0],[41.8,65.2],[41.8,67.4],[41.8,69.6],[41.8,71.8],[41.8,74.0],[41.8,76.2],[41.8,78.4],[41.8,80.6],[41.8,82.8],[41.8,85.0],[41.8,87.2],[41.8,89.4],[41.8,91.6],[41.8,93.8],[41.8,96.0],[41.8,98.2],[41.8,100.4],[41.8,102.6],[41.8,104.8],[41.8,107.0],[41.8,109.2],[41.8,111.4],[41.8,113.6],[41.8,115.8],[41.8,118.0],[41.8,120.2],[41.8,122.4],[41.8,124.6],[41.8,126.8],[41.8,129.0],[41.8,140.0],[44.0,-124.0],[44.0,-121.8],[44.0,-119.6],[44.0,-117.4],[44.0,-115.2],[44.0,-113.0],[44.0,-110.8],[44.0,-108.6],[44.0,-106.4],[44.0,-104.2],[44.0,-102.0],[44.0,-99.8],[44.0,-97.6],[44.0,-95.4],[44.0,-93.2],[44.0,-91.0],[44.0,-88.8],[44.0,-86.6],[44.0,-84.4],[44.0,-82.2],[44.0,-80.0],[44.0,-77.8],[44.0,-75.6],[44.0,-73.4],[44.0,-71.2],[44.0,-0.8],[44.0,1.4],[44.0,3.6],[44.0,5.8],[44.0,8.0],[44.0,10.2],[44.0,12.4],[44.0,16.8],[44.0,19.0],[44.0,21.2],[44.0,23.4],[44.0,25.6],[44.0,27.8],[44.0,41.0],[44.0,43.2],[44.0,45.4],[44.0,52.0],[44.0,54.2],[44.0,56.4],[44.0,58.6],[44.0,60.8],[44.0,63.0],[44.0,65.2],[44.0,67.4],[44.0,69.6],[44.0,71.8],[44.0,74.0],[44.0,76.2],[44.0,78.4],[44.0,80.6],[44.0,82.8],[44.0,85.0],[44.0,87.2],[44.0,89.4],[44.0,91.6],[44.0,93.8],[44.0,96.0],[44.0,98.2],[44.0,100.4],[44.0,102.6],[44.0,104.8],[44.0,107.0],[44.0,109.2],[44.0,111.4],[44.0,113.6],[44.0,115.8],[44.0,118.0],[44.0,120.2],[44.0,122.4],[44.0,124.6],[44.0,126.8],[44.0,129.0],[44.0,131.2],[44.0,133.4],[44.0,142.2],[44.0,144.4],[46.2,-121.8],[46.2,-119.6],[46.2,-117.4],[46.2,-115.2],[46.2,-113.0],[46.2,-110.8],[46.2,-108.6],[46.2,-106.4],[46.2,-104.2],[46.2,-102.0],[46.2,-99.8],[46.2,-97.6],[46.2,-95.4],[46.2,-93.2],[46.2,-91.0],[46.2,-88.8],[46.2,-86.6],[46.2,-84.4],[46.2,-82.2],[46.2,-80.0],[46.2,-77.8],[46.2,-75.6],[46.2,-73.4],[46.2,-71.2],[46.2,-69.0],[46.2,-66.8],[46.2,-64.6],[46.2,-62.4],[46.2,-0.8],[46.2,1.4],[46.2,3.6],[46.2,5.8],[46.2,8.0],[46.2,10.2],[46.2,12.4],[46.2,14.6],[46.2,16.8],[46.2,19.0],[46.2,21.2],[46.2,23.4],[46.2,25.6],[46.2,27.8],[46.2,30.0],[46.2,34.4],[46.2,38.8],[46.2,41.0],[46.2,43.2],[46.2,45.4],[46.2,47.6],[46.2,54.2],[46.2,56.4],[46.2,58.6],[46.2,60.8],[46.2,63.0],[46.2,65.2],[46.2,67.4],[46.2,69.6],[46.2,71.8],[46.2,74.0],[46.2,76.2],[46.2,78.4],[46.2,80.6],[46.2,82.8],[46.2,85.0],[46.2,87.2],[46.2,89.4],[46.2,91.6],[46.2,93.8],[46.2,96.0],[46.2,98.2],[46.2,100.4],[46.2,102.6],[46.2,104.8],[46.2,107.0],[46.2,109.2],[46.2,111.4],[46.2,113.6],[46.2,115.8],[46.2,118.0],[46.2,120.2],[46.2,122.4],[46.2,124.6],[46.2,126.8],[46.2,129.0],[46.2,131.2],[46.2,133.4],[46.2,135.6],[46.2,137.8],[46.2,142.2],[48.4,-124.0],[48.4,-121.8],[48.4,-119.6],[48.4,-117.4],[48.4,-115.2],[48.4,-113.0],[48.4,-110.8],[48.4,-108.6],[48.4,-106.4],[48.4,-104.2],[48.4,-102.0],[48.4,-99.8],[48.4,-97.6],[48.4,-95.4],[48.4,-93.2],[48.4,-91.0],[48.4,-88.8],[48.4,-86.6],[48.4,-84.4],[48.4,-82.2],[48.4,-80.0],[48.4,-77.8],[48.4,-75.6],[48.4,-73.4],[48.4,-71.2],[48.4,-66.8],[48.4,-58.0],[48.4,-55.8],[48.4,-53.6],[48.4,-3.0],[48.4,-0.8],[48.4,1.4],[48.4,3.6],[48.4,5.8],[48.4,8.0],[48.4,10.2],[48.4,12.4],[48.4,14.6],[48.4,16.8],[48.4,19.0],[48.4,21.2],[48.4,23.4],[48.4,25.6],[48.4,27.8],[48.4,30.0],[48.4,32.2],[48.4,34.4],[48.4,36.6],[48.4,38.8],[48.4,41.0],[48.4,43.2],[48.4,45.4],[48.4,47.6],[48.4,49.8],[48.4,52.0],[48.4,54.2],[48.4,56.4],[48.4,58.6],[48.4,60.8],[48.4,63.0],[48.4,65.2],[48.4,67.4],[48.4,69.6],[48.4,71.8],[48.4,74.0],[48.4,76.2],[48.4,78.4],[48.4,80.6],[48.4,82.8],[48.4,85.0],[48.4,87.2],[48.4,89.4],[48.4,91.6],[48.4,93.8],[48.4,96.0],[48.4,98.2],[48.4,100.4],[48.4,102.6],[48.4,104.8],[48.4,107.0],[48.4,109.2],[48.4,111.4],[48.4,113.6],[48.4,115.8],[48.4,118.0],[48.4,120.2],[48.4,122.4],[48.4,124.6],[48.4,126.8],[48.4,129.0],[48.4,131.2],[48.4,133.4],[48.4,135.6],[48.4,137.8],[48.4,140.0],[48.4,142.2],[50.6,-128.4],[50.6,-126.2],[50.6,-124.0],[50.6,-121.8],[50.6,-119.6],[50.6,-117.4],[50.6,-115.2],[50.6,-113.0],[50.6,-110.8],[50.6,-108.6],[50.6,-106.4],[50.6,-104.2],[50.6,-102.0],[50.6,-99.8],[50.6,-97.6],[50.6,-95.4],[50.6,-93.2],[50.6,-91.0],[50.6,-88.8],[50.6,-86.6],[50.6,-84.4],[50.6,-82.2],[50.6,-80.0],[50.6,-77.8],[50.6,-75.6],[50.6,-73.4],[50.6,-71.2],[50.6,-69.0],[50.6,-66.8],[50.6,-64.6],[50.6,-62.4],[50.6,-60.2],[50.6,3.6],[50.6,5.8],[50.6,8.0],[50.6,10.2],[50.6,12.4],[50.6,14.6],[50.6,16.8],[50.6,19.0],[50.6,21.2],[50.6,23.4],[50.6,25.6],[50.6,27.8],[50.6,30.0],[50.6,32.2],[50.6,34.4],[50.6,36.6],[50.6,38.8],[50.6,41.0],[50.6,43.2],[50.6,45.4],[50.6,47.6],[50.6,49.8],[50.6,52.0],[50.6,54.2],[50.6,56.4],[50.6,58.6],[50.6,60.8],[50.6,63.0],[50.6,65.2],[50.6,67.4],[50.6,69.6],[50.6,71.8],[50.6,74.0],[50.6,76.2],[50.6,78.4],[50.6,80.6],[50.6,82.8],[50.6,85.0],[50.6,87.2],[50.6,89.4],[50.6,91.6],[50.6,93.8],[50.6,96.0],[50.6,98.2],[50.6,100.4],[50.6,102.6],[50.6,104.8],[50.6,107.0],[50.6,109.2],[50.6,111.4],[50.6,113.6],[50.6,115.8],[50.6,118.0],[50.6,120.2],[50.6,122.4],[50.6,124.6],[50.6,126.8],[50.6,129.0],[50.6,131.2],[50.6,133.4],[50.6,135.6],[50.6,137.8],[50.6,140.0],[50.6,142.2],[52.8,-128.4],[52.8,-126.2],[52.8,-124.0],[52.8,-121.8],[52.8,-119.6],[52.8,-117.4],[52.8,-115.2],[52.8,-113.0],[52.8,-110.8],[52.8,-108.6],[52.8,-106.4],[52.8,-104.2],[52.8,-102.0],[52.8,-99.8],[52.8,-97.6],[52.8,-95.4],[52.8,-93.2],[52.8,-91.0],[52.8,-88.8],[52.8,-86.6],[52.8,-84.4],[52.8,-82.2],[52.8,-77.8],[52.8,-75.6],[52.8,-73.4],[52.8,-71.2],[52.8,-69.0],[52.8,-66.8],[52.8,-64.6],[52.8,-62.4],[52.8,-60.2],[52.8,-58.0],[52.8,-55.8],[52.8,-7.4],[52.8,-3.0],[52.8,-0.8],[52.8,5.8],[52.8,8.0],[52.8,10.2],[52.8,12.4],[52.8,14.6],[52.8,16.8],[52.8,19.0],[52.8,21.2],[52.8,23.4],[52.8,25.6],[52.8,27.8],[52.8,30.0],[52.8,32.2],[52.8,34.4],[52.8,36.6],[52.8,38.8],[52.8,41.0],[52.8,43.2],[52.8,45.4],[52.8,47.6],[52.8,49.8],[52.8,52.0],[52.8,54.2],[52.8,56.4],[52.8,58.6],[52.8,60.8],[52.8,63.0],[52.8,65.2],[52.8,67.4],[52.8,69.6],[52.8,71.8],[52.8,74.0],[52.8,76.2],[52.8,78.4],[52.8,80.6],[52.8,82.8],[52.8,85.0],[52.8,87.2],[52.8,89.4],[52.8,91.6],[52.8,93.8],[52.8,96.0],[52.8,98.2],[52.8,100.4],[52.8,102.6],[52.8,104.8],[52.8,107.0],[52.8,109.2],[52.8,111.4],[52.8,113.6],[52.8,115.8],[52.8,118.0],[52.8,120.2],[52.8,122.4],[52.8,124.6],[52.8,126.8],[52.8,129.0],[52.8,131.2],[52.8,133.4],[52.8,135.6],[52.8,137.8],[52.8,140.0],[52.8,142.2],[52.8,157.6],[55.0,-163.6],[55.0,-130.6],[55.0,-128.4],[55.0,-126.2],[55.0,-124.0],[55.0,-121.8],[55.0,-119.6],[55.0,-117.4],[55.0,-115.2],[55.0,-113.0],[55.0,-110.8],[55.0,-108.6],[55.0,-106.4],[55.0,-104.2],[55.0,-102.0],[55.0,-99.8],[55.0,-97.6],[55.0,-95.4],[55.0,-93.2],[55.0,-91.0],[55.0,-88.8],[55.0,-86.6],[55.0,-84.4],[55.0,-77.8],[55.0,-75.6],[55.0,-73.4],[55.0,-71.2],[55.0,-69.0],[55.0,-66.8],[55.0,-64.6],[55.0,-62.4],[55.0,-60.2],[55.0,-7.4],[55.0,-3.0],[55.0,21.2],[55.0,23.4],[55.0,25.6],[55.0,27.8],[55.0,30.0],[55.0,32.2],[55.0,34.4],[55.0,36.6],[55.0,38.8],[55.0,41.0],[55.0,43.2],[55.0,45.4],[55.0,47.6],[55.0,49.8],[55.0,52.0],[55.0,54.2],[55.0,56.4],[55.0,58.6],[55.0,60.8],[55.0,63.0],[55.0,65.2],[55.0,67.4],[55.0,69.6],[55.0,71.8],[55.0,74.0],[55.0,76.2],[55.0,78.4],[55.0,80.6],[55.0,82.8],[55.0,85.0],[55.0,87.2],[55.0,89.4],[55.0,91.6],[55.0,93.8],[55.0,96.0],[55.0,98.2],[55.0,100.4],[55.0,102.6],[55.0,104.8],[55.0,107.0],[55.0,109.2],[55.0,111.4],[55.0,113.6],[55.0,115.8],[55.0,118.0],[55.0,120.2],[55.0,122.4],[55.0,124.6],[55.0,126.8],[55.0,129.0],[55.0,131.2],[55.0,133.4],[55.0,157.6],[55.0,159.8],[57.2,-157.0],[57.2,-132.8],[57.2,-130.6],[57.2,-128.4],[57.2,-126.2],[57.2,-124.0],[57.2,-121.8],[57.2,-119.6],[57.2,-117.4],[57.2,-115.2],[57.2,-113.0],[57.2,-110.8],[57.2,-108.6],[57.2,-106.4],[57.2,-104.2],[57.2,-102.0],[57.2,-99.8],[57.2,-97.6],[57.2,-95.4],[57.2,-93.2],[57.2,-91.0],[57.2,-75.6],[57.2,-73.4],[57.2,-71.2],[57.2,-69.0],[57.2,-66.8],[57.2,-64.6],[57.2,-62.4],[57.2,-5.2],[57.2,-3.0],[57.2,10.2],[57.2,12.4],[57.2,14.6],[57.2,25.6],[57.2,27.8],[57.2,30.0],[57.2,32.2],[57.2,34.4],[57.2,36.6],[57.2,38.8],[57.2,41.0],[57.2,43.2],[57.2,45.4],[57.2,47.6],[57.2,49.8],[57.2,52.0],[57.2,54.2],[57.2,56.4],[57.2,58.6],[57.2,60.8],[57.2,63.0],[57.2,65.2],[57.2,67.4],[57.2,69.6],[57.2,71.8],[57.2,74.0],[57.2,76.2],[57.2,78.4],[57.2,80.6],[57.2,82.8],[57.2,85.0],[57.2,87.2],[57.2,89.4],[57.2,91.6],[57.2,93.8],[57.2,96.0],[57.2,98.2],[57.2,100.4],[57.2,102.6],[57.2,104.8],[57.2,107.0],[57.2,109.2],[57.2,111.4],[57.2,113.6],[57.2,115.8],[57.2,118.0],[57.2,120.2],[57.2,122.4],[57.2,124.6],[57.2,126.8],[57.2,129.0],[57.2,131.2],[57.2,133.4],[57.2,135.6],[57.2,137.8],[57.2,157.6],[57.2,159.8],[57.2,162.0],[59.4,-161.4],[59.4,-159.2],[59.4,-157.0],[59.4,-154.8],[59.4,-139.4],[59.4,-137.2],[59.4,-135.0],[59.4,-132.8],[59.4,-130.6],[59.4,-128.4],[59.4,-126.2],[59.4,-124.0],[59.4,-121.8],[59.4,-119.6],[59.4,-117.4],[59.4,-115.2],[59.4,-113.0],[59.4,-110.8],[59.4,-108.6],[59.4,-106.4],[59.4,-104.2],[59.4,-102.0],[59.4,-99.8],[59.4,-97.6],[59.4,-95.4],[59.4,-77.8],[59.4,-75.6],[59.4,-73.4],[59.4,-71.2],[59.4,-64.6],[59.4,5.8],[59.4,8.0],[59.4,10.2],[59.4,12.4],[59.4,14.6],[59.4,16.8],[59.4,25.6],[59.4,27.8],[59.4,30.0],[59.4,32.2],[59.4,34.4],[59.4,36.6],[59.4,38.8],[59.4,41.0],[59.4,43.2],[59.4,45.4],[59.4,47.6],[59.4,49.8],[59.4,52.0],[59.4,54.2],[59.4,56.4],[59.4,58.6],[59.4,60.8],[59.4,63.0],[59.4,65.2],[59.4,67.4],[59.4,69.6],[59.4,71.8],[59.4,74.0],[59.4,76.2],[59.4,78.4],[59.4,80.6],[59.4,82.8],[59.4,85.0],[59.4,87.2],[59.4,89.4],[59.4,91.6],[59.4,93.8],[59.4,96.0],[59.4,98.2],[59.4,100.4],[59.4,102.6],[59.4,104.8],[59.4,107.0],[59.4,109.2],[59.4,111.4],[59.4,113.6],[59.4,115.8],[59.4,118.0],[59.4,120.2],[59.4,122.4],[59.4,124.6],[59.4,126.8],[59.4,129.0],[59.4,131.2],[59.4,133.4],[59.4,135.6],[59.4,137.8],[59.4,140.0],[59.4,142.2],[59.4,144.4],[59.4,146.6],[59.4,148.8],[59.4,153.2],[59.4,162.0],[61.6,-165.8],[61.6,-163.6],[61.6,-161.4],[61.6,-159.2],[61.6,-157.0],[61.6,-154.8],[61.6,-152.6],[61.6,-150.4],[61.6,-148.2],[61.6,-146.0],[61.6,-143.8],[61.6,-141.6],[61.6,-139.4],[61.6,-137.2],[61.6,-135.0],[61.6,-132.8],[61.6,-130.6],[61.6,-128.4],[61.6,-126.2],[61.6,-124.0],[61.6,-121.8],[61.6,-119.6],[61.6,-117.4],[61.6,-115.2],[61.6,-113.0],[61.6,-110.8],[61.6,-108.6],[61.6,-106.4],[61.6,-104.2],[61.6,-102.0],[61.6,-99.8],[61.6,-97.6],[61.6,-95.4],[61.6,-77.8],[61.6,-75.6],[61.6,-73.4],[61.6,-49.2],[61.6,-47.0],[61.6,-44.8],[61.6,-42.6],[61.6,5.8],[61.6,8.0],[61.6,10.2],[61.6,12.4],[61.6,14.6],[61.6,16.8],[61.6,23.4],[61.6,25.6],[61.6,27.8],[61.6,30.0],[61.6,32.2],[61.6,34.4],[61.6,36.6],[61.6,38.8],[61.6,41.0],[61.6,43.2],[61.6,45.4],[61.6,47.6],[61.6,49.8],[61.6,52.0],[61.6,54.2],[61.6,56.4],[61.6,58.6],[61.6,60.8],[61.6,63.0],[61.6,65.2],[61.6,67.4],[61.6,69.6],[61.6,71.8],[61.6,74.0],[61.6,76.2],[61.6,78.4],[61.6,80.6],[61.6,82.8],[61.6,85.0],[61.6,87.2],[61.6,89.4],[61.6,91.6],[61.6,93.8],[61.6,96.0],[61.6,98.2],[61.6,100.4],[61.6,102.6],[61.6,104.8],[61.6,107.0],[61.6,109.2],[61.6,111.4],[61.6,113.6],[61.6,115.8],[61.6,118.0],[61.6,120.2],[61.6,122.4],[61.6,124.6],[61.6,126.8],[61.6,129.0],[61.6,131.2],[61.6,133.4],[61.6,135.6],[61.6,137.8],[61.6,140.0],[61.6,142.2],[61.6,144.4],[61.6,146.6],[61.6,148.8],[61.6,151.0],[61.6,153.2],[61.6,155.4],[61.6,157.6],[61.6,159.8],[61.6,162.0],[61.6,164.2],[61.6,166.4],[61.6,168.6],[61.6,170.8],[61.6,173.0],[63.8,-159.2],[63.8,-157.0],[63.8,-154.8],[63.8,-152.6],[63.8,-150.4],[63.8,-148.2],[63.8,-146.0],[63.8,-143.8],[63.8,-141.6],[63.8,-139.4],[63.8,-137.2],[63.8,-135.0],[63.8,-132.8],[63.8,-130.6],[63.8,-128.4],[63.8,-126.2],[63.8,-124.0],[63.8,-121.8],[63.8,-119.6],[63.8,-117.4],[63.8,-115.2],[63.8,-113.0],[63.8,-110.8],[63.8,-108.6],[63.8,-106.4],[63.8,-104.2],[63.8,-102.0],[63.8,-99.8],[63.8,-97.6],[63.8,-95.4],[63.8,-93.2],[63.8,-91.0],[63.8,-86.6],[63.8,-84.4],[63.8,-82.2],[63.8,-71.2],[63.8,-69.0],[63.8,-66.8],[63.8,-51.4],[63.8,-49.2],[63.8,-47.0],[63.8,-44.8],[63.8,-42.6],[63.8,-20.6],[63.8,-18.4],[63.8,10.2],[63.8,12.4],[63.8,14.6],[63.8,16.8],[63.8,19.0],[63.8,23.4],[63.8,25.6],[63.8,27.8],[63.8,30.0],[63.8,32.2],[63.8,34.4],[63.8,36.6],[63.8,38.8],[63.8,41.0],[63.8,43.2],[63.8,45.4],[63.8,47.6],[63.8,49.8],[63.8,52.0],[63.8,54.2],[63.8,56.4],[63.8,58.6],[63.8,60.8],[63.8,63.0],[63.8,65.2],[63.8,67.4],[63.8,69.6],[63.8,71.8],[63.8,74.0],[63.8,76.2],[63.8,78.4],[63.8,80.6],[63.8,82.8],[63.8,85.0],[63.8,87.2],[63.8,89.4],[63.8,91.6],[63.8,93.8],[63.8,96.0],[63.8,98.2],[63.8,100.4],[63.8,102.6],[63.8,104.8],[63.8,107.0],[63.8,109.2],[63.8,111.4],[63.8,113.6],[63.8,115.8],[63.8,118.0],[63.8,120.2],[63.8,122.4],[63.8,124.6],[63.8,126.8],[63.8,129.0],[63.8,131.2],[63.8,133.4],[63.8,135.6],[63.8,137.8],[63.8,140.0],[63.8,142.2],[63.8,144.4],[63.8,146.6],[63.8,148.8],[63.8,151.0],[63.8,153.2],[63.8,155.4],[63.8,157.6],[63.8,159.8],[63.8,162.0],[63.8,164.2],[63.8,166.4],[63.8,168.6],[63.8,170.8],[63.8,173.0],[63.8,175.2],[63.8,177.4],[66.0,-176.8],[66.0,-174.6],[66.0,-172.4],[66.0,-170.2],[66.0,-165.8],[66.0,-163.6],[66.0,-161.4],[66.0,-159.2],[66.0,-157.0],[66.0,-154.8],[66.0,-152.6],[66.0,-150.4],[66.0,-148.2],[66.0,-146.0],[66.0,-143.8],[66.0,-141.6],[66.0,-139.4],[66.0,-137.2],[66.0,-135.0],[66.0,-132.8],[66.0,-130.6],[66.0,-128.4],[66.0,-126.2],[66.0,-124.0],[66.0,-121.8],[66.0,-119.6],[66.0,-117.4],[66.0,-115.2],[66.0,-113.0],[66.0,-110.8],[66.0,-108.6],[66.0,-106.4],[66.0,-104.2],[66.0,-102.0],[66.0,-99.8],[66.0,-97.6],[66.0,-95.4],[66.0,-93.2],[66.0,-91.0],[66.0,-88.8],[66.0,-86.6],[66.0,-73.4],[66.0,-71.2],[66.0,-69.0],[66.0,-64.6],[66.0,-51.4],[66.0,-49.2],[66.0,-47.0],[66.0,-44.8],[66.0,-42.6],[66.0,-40.4],[66.0,-38.2],[66.0,-22.8],[66.0,-18.4],[66.0,-16.2],[66.0,14.6],[66.0,16.8],[66.0,19.0],[66.0,21.2],[66.0,23.4],[66.0,25.6],[66.0,27.8],[66.0,30.0],[66.0,32.2],[66.0,34.4],[66.0,41.0],[66.0,43.2],[66.0,45.4],[66.0,47.6],[66.0,49.8],[66.0,52.0],[66.0,54.2],[66.0,56.4],[66.0,58.6],[66.0,60.8],[66.0,63.0],[66.0,65.2],[66.0,67.4],[66.0,69.6],[66.0,71.8],[66.0,74.0],[66.0,76.2],[66.0,78.4],[66.0,80.6],[66.0,82.8],[66.0,85.0],[66.0,87.2],[66.0,89.4],[66.0,91.6],[66.0,93.8],[66.0,96.0],[66.0,98.2],[66.0,100.4],[66.0,102.6],[66.0,104.8],[66.0,107.0],[66.0,109.2],[66.0,111.4],[66.0,113.6],[66.0,115.8],[66.0,118.0],[66.0,120.2],[66.0,122.4],[66.0,124.6],[66.0,126.8],[66.0,129.0],[66.0,131.2],[66.0,133.4],[66.0,135.6],[66.0,137.8],[66.0,140.0],[66.0,142.2],[66.0,144.4],[66.0,146.6],[66.0,148.8],[66.0,151.0],[66.0,153.2],[66.0,155.4],[66.0,157.6],[66.0,159.8],[66.0,162.0],[66.0,164.2],[66.0,166.4],[66.0,168.6],[66.0,170.8],[66.0,173.0],[66.0,175.2],[66.0,177.4],[66.0,179.6],[68.2,-179.0],[68.2,-165.8],[68.2,-163.6],[68.2,-161.4],[68.2,-159.2],[68.2,-157.0],[68.2,-154.8],[68.2,-152.6],[68.2,-150.4],[68.2,-148.2],[68.2,-146.0],[68.2,-143.8],[68.2,-141.6],[68.2,-139.4],[68.2,-137.2],[68.2,-135.0],[68.2,-132.8],[68.2,-130.6],[68.2,-128.4],[68.2,-126.2],[68.2,-124.0],[68.2,-121.8],[68.2,-119.6],[68.2,-117.4],[68.2,-115.2],[68.2,-106.4],[68.2,-97.6],[68.2,-93.2],[68.2,-91.0],[68.2,-88.8],[68.2,-84.4],[68.2,-82.2],[68.2,-73.4],[68.2,-71.2],[68.2,-69.0],[68.2,-51.4],[68.2,-49.2],[68.2,-47.0],[68.2,-44.8],[68.2,-42.6],[68.2,-40.4],[68.2,-38.2],[68.2,-36.0],[68.2,-33.8],[68.2,-31.6],[68.2,16.8],[68.2,19.0],[68.2,21.2],[68.2,23.4],[68.2,25.6],[68.2,27.8],[68.2,30.0],[68.2,32.2],[68.2,34.4],[68.2,36.6],[68.2,38.8],[68.2,45.4],[68.2,52.0],[68.2,56.4],[68.2,58.6],[68.2,60.8],[68.2,63.0],[68.2,65.2],[68.2,67.4],[68.2,69.6],[68.2,71.8],[68.2,76.2],[68.2,78.4],[68.2,80.6],[68.2,82.8],[68.2,85.0],[68.2,87.2],[68.2,89.4],[68.2,91.6],[68.2,93.8],[68.2,96.0],[68.2,98.2],[68.2,100.4],[68.2,102.6],[68.2,104.8],[68.2,107.0],[68.2,109.2],[68.2,111.4],[68.2,113.6],[68.2,115.8],[68.2,118.0],[68.2,120.2],[68.2,122.4],[68.2,124.6],[68.2,126.8],[68.2,129.0],[68.2,131.2],[68.2,133.4],[68.2,135.6],[68.2,137.8],[68.2,140.0],[68.2,142.2],[68.2,144.4],[68.2,146.6],[68.2,148.8],[68.2,151.0],[68.2,153.2],[68.2,155.4],[68.2,157.6],[68.2,159.8],[68.2,162.0],[68.2,164.2],[68.2,166.4],[68.2,168.6],[68.2,170.8],[68.2,173.0],[68.2,175.2],[68.2,177.4],[68.2,179.6],[70.4,-159.2],[70.4,-157.0],[70.4,-154.8],[70.4,-152.6],[70.4,-150.4],[70.4,-110.8],[70.4,-108.6],[70.4,-106.4],[70.4,-104.2],[70.4,-95.4],[70.4,-93.2],[70.4,-86.6],[70.4,-84.4],[70.4,-82.2],[70.4,-80.0],[70.4,-77.8],[70.4,-75.6],[70.4,-73.4],[70.4,-71.2],[70.4,-69.0],[70.4,-53.6],[70.4,-51.4],[70.4,-49.2],[70.4,-47.0],[70.4,-44.8],[70.4,-42.6],[70.4,-40.4],[70.4,-38.2],[70.4,-36.0],[70.4,-33.8],[70.4,-31.6],[70.4,-29.4],[70.4,-27.2],[70.4,23.4],[70.4,25.6],[70.4,27.8],[70.4,30.0],[70.4,67.4],[70.4,69.6],[70.4,71.8],[70.4,76.2],[70.4,78.4],[70.4,80.6],[70.4,82.8],[70.4,85.0],[70.4,87.2],[70.4,89.4],[70.4,91.6],[70.4,93.8],[70.4,96.0],[70.4,98.2],[70.4,100.4],[70.4,102.6],[70.4,104.8],[70.4,107.0],[70.4,109.2],[70.4,111.4],[70.4,113.6],[70.4,115.8],[70.4,118.0],[70.4,120.2],[70.4,122.4],[70.4,124.6],[70.4,126.8],[70.4,129.0],[70.4,131.2],[70.4,133.4],[70.4,135.6],[70.4,137.8],[70.4,140.0],[70.4,142.2],[70.4,144.4],[70.4,146.6],[70.4,148.8],[70.4,151.0],[70.4,153.2],[70.4,155.4],[70.4,157.6],[70.4,159.8],[72.6,-124.0],[72.6,-121.8],[72.6,-119.6],[72.6,-117.4],[72.6,-115.2],[72.6,-113.0],[72.6,-106.4],[72.6,-102.0],[72.6,-99.8],[72.6,-97.6],[72.6,-95.4],[72.6,-88.8],[72.6,-86.6],[72.6,-84.4],[72.6,-82.2],[72.6,-77.8],[72.6,-53.6],[72.6,-51.4],[72.6,-49.2],[72.6,-47.0],[72.6,-44.8],[72.6,-42.6],[72.6,-40.4],[72.6,-38.2],[72.6,-36.0],[72.6,-33.8],[72.6,-31.6],[72.6,-29.4],[72.6,-27.2],[72.6,-25.0],[72.6,-22.8],[72.6,54.2],[72.6,69.6],[72.6,71.8],[72.6,82.8],[72.6,85.0],[72.6,87.2],[72.6,89.4],[72.6,91.6],[72.6,93.8],[72.6,96.0],[72.6,98.2],[72.6,100.4],[72.6,102.6],[72.6,104.8],[72.6,107.0],[72.6,109.2],[72.6,111.4],[72.6,113.6],[72.6,115.8],[72.6,118.0],[72.6,120.2],[72.6,122.4],[72.6,124.6],[72.6,126.8],[72.6,140.0],[72.6,142.2],[74.8,-113.0],[74.8,-110.8],[74.8,-95.4],[74.8,-91.0],[74.8,-88.8],[74.8,-86.6],[74.8,-84.4],[74.8,-82.2],[74.8,-55.8],[74.8,-53.6],[74.8,-51.4],[74.8,-49.2],[74.8,-47.0],[74.8,-44.8],[74.8,-42.6],[74.8,-40.4],[74.8,-38.2],[74.8,-36.0],[74.8,-33.8],[74.8,-31.6],[74.8,-29.4],[74.8,-27.2],[74.8,-25.0],[74.8,-22.8],[74.8,-20.6],[74.8,56.4],[74.8,58.6],[74.8,87.2],[74.8,89.4],[74.8,91.6],[74.8,93.8],[74.8,96.0],[74.8,98.2],[74.8,100.4],[74.8,102.6],[74.8,104.8],[74.8,107.0],[74.8,109.2],[74.8,111.4],[74.8,140.0],[74.8,148.8],[77.0,-119.6],[77.0,-117.4],[77.0,-95.4],[77.0,-88.8],[77.0,-86.6],[77.0,-84.4],[77.0,-82.2],[77.0,-80.0],[77.0,-71.2],[77.0,-69.0],[77.0,-66.8],[77.0,-64.6],[77.0,-62.4],[77.0,-60.2],[77.0,-58.0],[77.0,-55.8],[77.0,-53.6],[77.0,-51.4],[77.0,-49.2],[77.0,-47.0],[77.0,-44.8],[77.0,-42.6],[77.0,-40.4],[77.0,-38.2],[77.0,-36.0],[77.0,-33.8],[77.0,-31.6],[77.0,-29.4],[77.0,-27.2],[77.0,-25.0],[77.0,-22.8],[77.0,-20.6],[77.0,16.8],[77.0,102.6],[77.0,104.8],[79.2,-104.2],[79.2,-93.2],[79.2,-91.0],[79.2,-88.8],[79.2,-86.6],[79.2,-84.4],[79.2,-82.2],[79.2,-80.0],[79.2,-77.8],[79.2,-75.6],[79.2,-66.8],[79.2,-64.6],[79.2,-62.4],[79.2,-60.2],[79.2,-58.0],[79.2,-55.8],[79.2,-53.6],[79.2,-51.4],[79.2,-49.2],[79.2,-47.0],[79.2,-44.8],[79.2,-42.6],[79.2,-40.4],[79.2,-38.2],[79.2,-36.0],[79.2,-33.8],[79.2,-31.6],[79.2,-29.4],[79.2,-27.2],[79.2,-25.0],[79.2,-22.8],[79.2,-20.6],[79.2,12.4],[79.2,14.6],[79.2,16.8],[79.2,19.0],[79.2,96.0],[79.2,98.2],[79.2,102.6]].map(([lat,lon])=>({lat,lon}));
+ let rotY=-.95,rotX=-.12,drag=false,lastX=0,lastY=0,startX=0,startY=0,lastTime=0,hover=null,chosen='BOM',w=0,h=0,dpr=1,frame=0;
+ const rad=n=>n*Math.PI/180;
+ function project(lat,lon,r,cx,cy){
+  let a=rad(lon)+rotY,b=rad(lat),x=Math.cos(b)*Math.sin(a),y=Math.sin(b),z=Math.cos(b)*Math.cos(a);
+  const yy=y*Math.cos(rotX)-z*Math.sin(rotX),zz=y*Math.sin(rotX)+z*Math.cos(rotX);
+  return {x:cx+x*r,y:cy-yy*r,z:zz,visible:zz>-.04};
+ }
+ function resize(){const box=canvas.getBoundingClientRect();w=box.width;h=box.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+ function draw(t){
+  if(!drag&&!reduce){rotY+=.0018}
+  ctx.clearRect(0,0,w,h);
+  const r=Math.min(w,h)*.49,cx=w*.5,cy=h*.61;
+  const glow=ctx.createRadialGradient(cx-r*.28,cy-r*.42,r*.05,cx,cy,r*1.18);
+  glow.addColorStop(0,'#6083AA');glow.addColorStop(.55,'#294568');glow.addColorStop(1,'#10213F');
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle=glow;ctx.fillRect(cx-r,cy-r,r*2,r*2);
+  // Latitude/longitude grid.
+  ctx.strokeStyle='rgba(207,224,244,.15)';ctx.lineWidth=.7;
+  for(let lat=-60;lat<=60;lat+=30){ctx.beginPath();let started=false;for(let lon=-180;lon<=180;lon+=4){let p=project(lat,lon,r,cx,cy);if(p.visible){if(!started){ctx.moveTo(p.x,p.y);started=true}else ctx.lineTo(p.x,p.y)}else started=false}ctx.stroke()}
+  for(let lon=-180;lon<180;lon+=30){ctx.beginPath();let started=false;for(let lat=-88;lat<=88;lat+=3){let p=project(lat,lon,r,cx,cy);if(p.visible){if(!started){ctx.moveTo(p.x,p.y);started=true}else ctx.lineTo(p.x,p.y)}else started=false}ctx.stroke()}
+  // Blue-white land dots.
+  for(const p0 of landPoints){const p=project(p0.lat,p0.lon,r,cx,cy);if(p.visible){ctx.globalAlpha=.34+p.z*.42;ctx.fillStyle=p.z>.4?'#FFFFFF':'#6083AA';ctx.beginPath();ctx.arc(p.x,p.y,.8+Math.max(0,p.z)*.5,0,Math.PI*2);ctx.fill()}}
+  ctx.globalAlpha=1;
+  // Subtle atmospheric edge.
+  const edge=ctx.createRadialGradient(cx-r*.1,cy-r*.2,r*.72,cx,cy,r*1.02);edge.addColorStop(0,'#fff0');edge.addColorStop(.82,'#86B0E000');edge.addColorStop(1,'#6083AA55');
+  ctx.fillStyle=edge;ctx.fillRect(cx-r,cy-r,r*2,r*2);ctx.restore();
+  ctx.strokeStyle='#6083AA88';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  const projected=[];
+  for(const city of CITIES){const p=project(city.lat,city.lon,r,cx,cy);if(p.visible){projected.push({city,p});const active=city.code===chosen;
+    if(active){ctx.strokeStyle='#FFFFFF77';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,10+Math.sin(t*.004)*2,0,Math.PI*2);ctx.stroke()}
+    ctx.fillStyle=active?'#FFFFFF':'#6083AA';ctx.beginPath();ctx.arc(p.x,p.y,active?4.5:3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#10213F';ctx.lineWidth=1.5;ctx.stroke();
+    if(active||city.code===hover){
+      const label=city.name+' · '+city.code;
+      ctx.font='500 12px Jost, sans-serif';
+      const tw=ctx.measureText(label).width, bx=Math.min(w-tw-28,Math.max(8,p.x+12)), by=Math.max(24,Math.min(h-16,p.y-13));
+      const bw=tw+20,bh=30;
+      ctx.strokeStyle='#FFFFFF99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.x+3,p.y-3);ctx.lineTo(bx,by);ctx.stroke();
+      ctx.fillStyle='#10213F';ctx.beginPath();ctx.roundRect(bx,by-bh/2,bw,bh,9);ctx.fill();
+      ctx.strokeStyle='#6083AA';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#FFFFFF';ctx.fillText(label,bx+10,by+4);
+    }
+  }}
+  canvas._points=projected;
+  frame=requestAnimationFrame(draw);
+ }
+ function pick(e){const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;let best=null,dist=20;
+  for(const item of (canvas._points||[])){const d=Math.hypot(item.p.x-x,item.p.y-y);if(d<dist){dist=d;best=item}}
+  return best;
+ }
+ function selectCity(city){
+  chosen=city.code;
+  // Bring the selected destination to the front so people can identify its pin.
+  rotY=-rad(city.lon);rotX=Math.max(-1.05,Math.min(1.05,rad(city.lat)));
+  $('globeCity').textContent=city.name;
+  $('to').value=city.code;
+  if($('from').value===city.code)$('from').value=city.code==='DEL'?'GAU':'DEL';
+  $('globeRouteLabel').textContent=$('from').value+' → '+city.code;
+  document.querySelectorAll('.destination-option').forEach(btn=>{
+    const active=btn.dataset.city===city.code;
+    btn.classList.toggle('is-selected',active);
+    btn.setAttribute('aria-pressed',String(active));
+  });
+  toast(city.name+' selected. Build your flight below.');
+ }
+ window.selectSkyboundDestination=code=>{const city=CITIES.find(c=>c.code===code);if(city)selectCity(city)};
+ document.querySelectorAll('.destination-option').forEach(btn=>btn.addEventListener('click',()=>{
+   selectCity(CITIES.find(c=>c.code===btn.dataset.city));
+   $('explore').scrollIntoView({behavior:'smooth',block:'start'});
+ }));
+ canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;startX=e.clientX;startY=e.clientY;lastTime=performance.now();canvas.setPointerCapture(e.pointerId)});
+ canvas.addEventListener('pointermove',e=>{if(drag){rotY+=(e.clientX-lastX)*.008;rotX+=(e.clientY-lastY)*.006;rotX=Math.max(-1.05,Math.min(1.05,rotX));lastX=e.clientX;lastY=e.clientY}else{const hit=pick(e);hover=hit?hit.city.code:null;canvas.style.cursor=hit?'pointer':'grab'}});
+ canvas.addEventListener('pointerup',e=>{if(!drag)return;const moved=Math.hypot(e.clientX-startX,e.clientY-startY);drag=false;/* Clicks are handled when the pointer-down/up distance is tiny. */if(moved<7){const hit=pick(e);if(hit)selectCity(hit.city)}});
+ canvas.addEventListener('pointercancel',()=>drag=false);
+ canvas.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')rotY-=.15;else if(e.key==='ArrowRight')rotY+=.15;else if(e.key==='ArrowUp')rotX=Math.max(-1.05,rotX-.12);else if(e.key==='ArrowDown')rotX=Math.min(1.05,rotX+.12);else return;e.preventDefault()});
+ $('globeBook').addEventListener('click',()=>{$('book').scrollIntoView({behavior:'smooth'});$('to').focus({preventScroll:true});toast('Choose your dates and find flights to '+cities[$('to').value]+'.')});
+ new ResizeObserver(resize).observe(canvas);resize();draw(0);
+})();
+
+function setNum(el,v){const a=el._v||0;el._v=v;const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/500),e=1-Math.pow(1-k,3);el.textContent=money(Math.round(a+(v-a)*e));if(k<1)requestAnimationFrame(f)})(t0)}
+$('addons').addEventListener('change',updateSummary);
+$('swap').addEventListener('click',()=>{const a=$('from').value;$('from').value=$('to').value;$('to').value=a;$('swap').classList.toggle('flip')});
+(()=>{const R=document.documentElement;
+document.querySelectorAll('.destination,.perk,.section-head').forEach((e,i)=>{e.classList.add('rv');e.style.setProperty('--d',(i%3)*.12+'s')});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+if(!R.classList.contains('pre'))return;
+const fl=$('flyer'),tr=$('trail'),W=innerWidth,H=innerHeight,r=document.querySelector('.hero-visual').getBoundingClientRect(),vis=r.top>40&&r.bottom<H-20;
+const P0=[-120,H*.82],P1=[W*.38,-H*.12],P2=vis?[r.left+r.width/2,r.top+r.height/2]:[W+140,H*.28];
+const B=u=>{const a=1-u;return[a*a*P0[0]+2*a*u*P1[0]+u*u*P2[0],a*a*P0[1]+2*a*u*P1[1]+u*u*P2[1]]};
+const D=u=>{const a=1-u;return Math.atan2(2*a*(P1[1]-P0[1])+2*u*(P2[1]-P1[1]),2*a*(P1[0]-P0[0])+2*u*(P2[0]-P1[0]))*180/Math.PI};
+tr.setAttribute('viewBox','0 0 '+W+' '+H);
+const dots=[];for(let i=0;i<36;i++){const p=B(i/36),n=document.createElementNS('http://www.w3.org/2000/svg','circle');n.setAttribute('cx',p[0]);n.setAttribute('cy',p[1]);n.setAttribute('r',2.2);tr.appendChild(n);dots.push(n)}
+const T=1050,t0=performance.now()+60;let k=0;
+function land(){R.classList.remove('pre');R.classList.add('landed');fl.remove();tr.style.opacity=0;setTimeout(()=>tr.remove(),500)}
+function f(t){const p=Math.max(0,Math.min(1,(t-t0)/T)),u=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,q=B(u);
+let a=D(u);if(vis){const b=Math.max(0,(u-.8)/.2);a=a*(1-b*b)-20*b*b}
+fl.style.transform='translate('+(q[0]-42)+'px,'+(q[1]-42)+'px) rotate('+a+'deg) scale('+(1+1.4*(1-u)*(1-u))+')';
+while(k<36&&k/36<=u){dots[k].style.opacity=.7;k++}
+p<1?requestAnimationFrame(f):land()}
+requestAnimationFrame(f)})();
+</script>
+
+
+<script>
+/* Motion director: staggered scroll reveals, progress indicator, and reduced-motion support. */
+(()=>{
+ const root=document.documentElement;
+ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const progress=document.getElementById('scrollProgress');
+ const updateProgress=()=>{
+   if(!progress||reduce)return;
+   const max=document.documentElement.scrollHeight-window.innerHeight;
+   const pct=max>0?Math.min(100,Math.max(0,window.scrollY/max*100)):0;
+   progress.style.width=pct+'%';
+ };
+ window.addEventListener('scroll',updateProgress,{passive:true});window.addEventListener('resize',updateProgress);updateProgress();
+ if(reduce||!('IntersectionObserver' in window))return;
+ const targets=[
+  ...document.querySelectorAll('.world-copy > *, .globe-stage, .destination-directory-head, .destination-option, .hero-inner > div, .search-card, .section-head, .destination, .perk, .footer')
+ ];
+ targets.forEach((el,i)=>{
+  if(el.classList.contains('motion-reveal'))return;
+  el.classList.add('motion-reveal');
+  const siblingIndex=el.classList.contains('destination-option')?Array.from(el.parentElement.children).indexOf(el):el.classList.contains('destination')||el.classList.contains('perk')?Array.from(el.parentElement.children).indexOf(el):i%4;
+  el.style.setProperty('--motion-delay',Math.min(siblingIndex%5,4)*85+'ms');
+ });
+ root.classList.add('motion-on');
+ const io=new IntersectionObserver(entries=>entries.forEach(entry=>{
+  if(entry.isIntersecting){entry.target.classList.add('motion-in');io.unobserve(entry.target)}
+ }),{threshold:.12,rootMargin:'0px 0px -4% 0px'});
+ targets.forEach(el=>io.observe(el));
+ // Never leave content hidden if the tab is backgrounded before the observer fires.
+ window.addEventListener('pageshow',()=>{if(document.visibilityState==='visible')targets.filter(el=>el.getBoundingClientRect().top<innerHeight*.9).forEach(el=>el.classList.add('motion-in'))},{once:true});
+})();
+</script>
+
+</body>
+</html>
